@@ -1,0 +1,21 @@
+{
+  "name": "@btfp/seed",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "seed:local": "tsx src/run.ts --endpoint http://localhost:8000",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.716.0",
+    "@aws-sdk/lib-dynamodb": "^3.716.0",
+    "@btfp/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}

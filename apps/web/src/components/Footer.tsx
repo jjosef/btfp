@@ -1,0 +1,19 @@
+export function Footer() {
+  return (
+    <footer className="mt-16 border-t border-paw-200 bg-paw-50 py-8">
+      <div className="mx-auto max-w-5xl px-4 text-sm text-neutral-600">
+        <p className="font-semibold text-alert-600">
+          Not a substitute for veterinary care. If you suspect a poisoning, contact a vet immediately.
+        </p>
+        <p className="mt-1">
+          ASPCA Animal Poison Control: <a className="underline" href="tel:+18884264435">+1-888-426-4435</a>{' '}
+          &middot; Pet Poison Helpline: <a className="underline" href="tel:+18557647661">+1-855-764-7661</a>
+        </p>
+        <p className="mt-4 text-neutral-400">
+          Plant data adapted from the ASPCA Toxic and Non-Toxic Plants list. Community contributions are
+          reviewed before publishing.
+        </p>
+      </div>
+    </footer>
+  );
+}

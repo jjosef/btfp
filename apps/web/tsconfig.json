@@ -1,0 +1,8 @@
+{
+  "extends": "../../packages/config/tsconfig-react.json",
+  "compilerOptions": {
+    "composite": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}
