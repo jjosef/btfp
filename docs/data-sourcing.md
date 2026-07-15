@@ -8,6 +8,11 @@ scrape date). Transformed by `data/seed/src/transform.ts` into `plant`, `food`, 
 `medication` Things, each tagged with the pet types they're dangerous to (`dog`, plus
 `cat`/`horse` where the source noted it).
 
+**This file is gitignored, not committed.** It's scraped ASPCA content, and this repo is
+public — redistributing it under this repo's license isn't something to do without
+ASPCA's sign-off. Keep your own local copy at that path to run `pnpm seed:local`; ask
+whoever gave you the original dataset for a copy if you don't have one.
+
 ## Expanding coverage
 
 Deliberately **not** proposing broad automated scraping here — most veterinary/poison-control
