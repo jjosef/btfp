@@ -16,18 +16,37 @@ of which unlocks contributing.
 
 ## Path 2: professional (organizational email)
 
-For vets and scientists who'd rather prove they work somewhere than take a quiz. Lives in
-`apps/bff/src/professional-verification/`:
+For vets and scientists — proves you control an organizational email, doesn't assume
+you have (or want) a GitHub or Google account. Two entry points into the same
+underlying mechanism (`apps/bff/src/auth/email-code.service.ts`):
+
+- **Standalone sign-in**, no prior account needed: `POST /auth/email/request` +
+  `/auth/email/confirm` (`AuthController`, unauthenticated). Confirming the code creates a
+  new `User` (`provider: 'email'`, keyed by the address itself —
+  `UsersService.findOrCreateByEmail`) and issues a session, same as finishing a GitHub
+  OAuth login. `EmailSignInDialog.tsx` in the frontend.
+- **Add-on to an existing session**: someone already signed in via GitHub/Google can layer
+  org verification onto that same account instead — `POST /verification/professional/request`
+  + `/confirm` (`ProfessionalVerificationController`, requires `JwtAuthGuard`). Delegates to
+  the identical underlying service. `ProfessionalVerificationDialog.tsx` in the frontend.
+
+Either way, the mechanism itself:
 
 1. **Domain gate**: the claimed email's domain must not be a personal/free provider
-   (`free-email-domains.ts` — a hardcoded blocklist, not an npm package, so it's auditable)
-   and must resolve real MX records.
+   (`free-email-domains.ts` — a hardcoded blocklist, not an npm package, so it's auditable),
+   must resolve real MX records, and is rate-limited to one code per minute
+   (`UsersService.canRequestNewCode`) to make the public, unauthenticated request endpoint
+   harder to use as a spam vector.
 2. **Bedrock classification** (`bedrock-classifier.service.ts`): Claude Haiku, via Bedrock's
    Converse API with forced tool-call output, guesses what kind of org the domain looks like
    (veterinary clinic, university/research, etc.) from the domain name alone — no web
    access. This is **assistive only, never a gate**: an LLM guessing from a domain string
    can't actually prove an organization is real, and if Bedrock errors or is unavailable,
    verification proceeds without a label rather than blocking.
+   **Requires a one-time manual step**: AWS/Anthropic require submitting a "use case
+   details" form for the account before Anthropic models on Bedrock will actually respond —
+   until that's done, `bedrock:InvokeModel` calls fail and classification is silently
+   skipped (the gate above still works fine without it).
 3. **Proof of ownership**: a 6-digit code (SHA-256 hashed at rest, 15-minute expiry) is
    emailed via SES to the claimed address. Confirming it moves status to
    `awaiting_review` — proves the person controls the inbox, but doesn't yet grant anything.

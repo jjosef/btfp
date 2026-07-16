@@ -51,4 +51,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ approve, reason }),
     }),
+  requestEmailSignIn: (email: string) =>
+    request<{ orgClassification?: string }>('/auth/email/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  confirmEmailSignIn: (email: string, code: string) =>
+    request<{ confirmed: boolean }>('/auth/email/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    }),
 };

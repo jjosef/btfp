@@ -1,4 +1,7 @@
-export type OAuthProvider = 'github' | 'google';
+// 'email' isn't OAuth — it's the standalone organizational-email sign-in
+// path (see docs/verification-flow.md). Kept in the same union since it's
+// still "how this user proved who they are."
+export type AuthProvider = 'github' | 'google' | 'email';
 
 export type ProfessionalStatus =
   | 'none'
@@ -21,7 +24,7 @@ export interface ProfessionalVerification {
 
 export interface User {
   id: string;
-  provider: OAuthProvider;
+  provider: AuthProvider;
   providerAccountId: string;
   displayName: string;
   avatarUrl?: string;

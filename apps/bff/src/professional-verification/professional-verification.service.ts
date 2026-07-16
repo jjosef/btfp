@@ -1,64 +1,33 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { randomInt } from 'node:crypto';
-import { promises as dns } from 'node:dns';
+import { Injectable } from '@nestjs/common';
 import type { User } from '@btfp/shared-types';
 import { UsersService } from '../auth/users.service.js';
-import { BedrockClassifierService } from './bedrock-classifier.service.js';
-import { EmailSenderService } from './email-sender.service.js';
-import { isFreeEmailDomain } from './free-email-domains.js';
-
-const CODE_TTL_MS = 15 * 60 * 1000;
+import { EmailCodeService } from '../auth/email-code.service.js';
 
 interface UserAccountRef {
   provider: string;
   providerAccountId: string;
 }
 
+/**
+ * Thin wrapper around AuthModule's EmailCodeService for the "I'm already
+ * signed in and want to add org verification to this account" flow (the
+ * request/confirm logic itself is shared with the standalone email
+ * sign-in path — see auth/email-code.service.ts) plus the review queue,
+ * which is specific to this flow.
+ */
 @Injectable()
 export class ProfessionalVerificationService {
   constructor(
     private readonly users: UsersService,
-    private readonly bedrock: BedrockClassifierService,
-    private readonly emailSender: EmailSenderService,
+    private readonly emailCode: EmailCodeService,
   ) {}
 
   async request(user: UserAccountRef, email: string): Promise<{ orgClassification?: string }> {
-    const domain = email.split('@')[1]?.toLowerCase();
-    if (!domain) throw new BadRequestException('Invalid email address');
-    if (isFreeEmailDomain(domain)) {
-      throw new BadRequestException(
-        'Please use an organizational email address, not a personal/free provider.',
-      );
-    }
-
-    try {
-      const records = await dns.resolveMx(domain);
-      if (records.length === 0) throw new Error('no MX records');
-    } catch {
-      throw new BadRequestException(`Couldn't verify that ${domain} can receive email — check for typos.`);
-    }
-
-    const classification = await this.bedrock.classifyDomain(domain);
-
-    const code = String(randomInt(100000, 999999));
-    await this.users.setProfessionalPending({
-      provider: user.provider,
-      providerAccountId: user.providerAccountId,
-      email,
-      domain,
-      code,
-      codeExpiresAt: new Date(Date.now() + CODE_TTL_MS).toISOString(),
-      orgClassification: classification?.classification,
-      orgClassificationReasoning: classification?.reasoning,
-    });
-
-    await this.emailSender.sendVerificationCode(email, code);
-
-    return { orgClassification: classification?.classification };
+    return this.emailCode.request(user, email);
   }
 
   async confirm(user: UserAccountRef, code: string): Promise<boolean> {
-    return this.users.confirmProfessionalCode(user.provider, user.providerAccountId, code);
+    return this.emailCode.confirm(user, code);
   }
 
   async listPending(): Promise<User[]> {

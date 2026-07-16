@@ -6,6 +6,9 @@ import { AuthService } from './auth.service.js';
 import { UsersService } from './users.service.js';
 import { GithubStrategy } from './github.strategy.js';
 import { GoogleStrategy } from './google.strategy.js';
+import { EmailCodeService } from './email-code.service.js';
+import { BedrockClassifierService } from './bedrock-classifier.service.js';
+import { EmailSenderService } from './email-sender.service.js';
 
 @Module({
   imports: [
@@ -16,7 +19,15 @@ import { GoogleStrategy } from './google.strategy.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, GithubStrategy, GoogleStrategy],
-  exports: [AuthService, UsersService],
+  providers: [
+    AuthService,
+    UsersService,
+    GithubStrategy,
+    GoogleStrategy,
+    EmailCodeService,
+    BedrockClassifierService,
+    EmailSenderService,
+  ],
+  exports: [AuthService, UsersService, EmailCodeService],
 })
 export class AuthModule {}

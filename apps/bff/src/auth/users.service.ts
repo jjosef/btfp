@@ -11,7 +11,10 @@ const INTERNAL_FIELDS = [
   'professionalEmail',
   'professionalCodeHash',
   'professionalCodeExpiresAt',
+  'professionalCodeIssuedAt',
 ] as const;
+
+const CODE_RESEND_COOLDOWN_MS = 60 * 1000;
 
 function stripInternalUserFields(item: Record<string, unknown>): User {
   const clean = { ...item };
@@ -84,6 +87,36 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Standalone sign-in with just an organizational email — no GitHub/Google
+   * account required. `provider: 'email'`, keyed by the address itself.
+   */
+  async findOrCreateByEmail(email: string): Promise<User> {
+    const providerAccountId = email.toLowerCase();
+    const existing = await this.getByProviderAccount('email', providerAccountId);
+    if (existing) return existing;
+
+    const now = new Date().toISOString();
+    const user: User = {
+      id: randomUUID(),
+      provider: 'email',
+      providerAccountId,
+      displayName: email.split('@')[0] ?? email,
+      email,
+      verifiedContributor: false,
+      createdAt: now,
+    };
+
+    await this.db.send(
+      new PutCommand({
+        TableName: USERS_TABLE_NAME,
+        Item: { ...user, PK: this.pk('email', providerAccountId), GSI1PK: `USERID#${user.id}` },
+      }),
+    );
+
+    return user;
+  }
+
   async markVerified(provider: string, providerAccountId: string): Promise<void> {
     await this.db.send(
       new UpdateCommand({
@@ -93,6 +126,16 @@ export class UsersService {
         ExpressionAttributeValues: { ':true': true, ':now': new Date().toISOString() },
       }),
     );
+  }
+
+  /** Basic anti-spam: refuse a new code within CODE_RESEND_COOLDOWN_MS of the last one. */
+  async canRequestNewCode(provider: string, providerAccountId: string): Promise<boolean> {
+    const result = await this.db.send(
+      new GetCommand({ TableName: USERS_TABLE_NAME, Key: { PK: this.pk(provider, providerAccountId) } }),
+    );
+    const issuedAt = result.Item?.professionalCodeIssuedAt as string | undefined;
+    if (!issuedAt) return true;
+    return Date.now() - new Date(issuedAt).getTime() >= CODE_RESEND_COOLDOWN_MS;
   }
 
   async setProfessionalPending(params: {
@@ -111,7 +154,8 @@ export class UsersService {
         Key: { PK: this.pk(params.provider, params.providerAccountId) },
         UpdateExpression:
           'SET professional = :professional, professionalEmail = :email, ' +
-          'professionalCodeHash = :codeHash, professionalCodeExpiresAt = :codeExpiresAt',
+          'professionalCodeHash = :codeHash, professionalCodeExpiresAt = :codeExpiresAt, ' +
+          'professionalCodeIssuedAt = :codeIssuedAt',
         ExpressionAttributeValues: {
           ':professional': {
             status: 'pending_email_confirmation',
@@ -123,6 +167,7 @@ export class UsersService {
           ':email': params.email,
           ':codeHash': hashCode(params.code),
           ':codeExpiresAt': params.codeExpiresAt,
+          ':codeIssuedAt': new Date().toISOString(),
         },
       }),
     );
@@ -144,7 +189,7 @@ export class UsersService {
         Key: { PK: this.pk(provider, providerAccountId) },
         UpdateExpression:
           'SET professional.#status = :status ' +
-          'REMOVE professionalCodeHash, professionalCodeExpiresAt',
+          'REMOVE professionalCodeHash, professionalCodeExpiresAt, professionalCodeIssuedAt',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'awaiting_review' },
       }),

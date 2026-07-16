@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useCurrentUser } from '../lib/useCurrentUser.js';
+import { EmailSignInDialog } from './EmailSignInDialog.js';
 
 export function Nav() {
-  const { user } = useCurrentUser();
+  const { user, refresh } = useCurrentUser();
 
   return (
     <header className="sticky top-0 z-10 border-b border-paw-200 bg-paw-50/90 backdrop-blur">
@@ -23,12 +24,15 @@ export function Nav() {
           {user ? (
             <span className="rounded-full bg-paw-100 px-3 py-1 text-paw-600">Hi, {user.displayName}</span>
           ) : (
-            <a
-              href="/api/auth/github"
-              className="rounded-full bg-paw-500 px-3 py-1 text-white hover:bg-paw-600"
-            >
-              Sign in
-            </a>
+            <>
+              <EmailSignInDialog onSignedIn={refresh} />
+              <a
+                href="/api/auth/github"
+                className="rounded-full bg-paw-500 px-3 py-1 text-white hover:bg-paw-600"
+              >
+                Sign in with GitHub
+              </a>
+            </>
           )}
         </div>
       </nav>

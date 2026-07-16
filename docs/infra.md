@@ -43,9 +43,19 @@ New SES accounts start in sandbox mode: can only send to individually-verified r
 addresses, and at a low rate. Moving to production access is an AWS Support request
 submitted via the SES console (Account dashboard → Request production access) — not
 something CDK or the API can do; AWS reviews it, typically same-day. Until that's done,
-`/verification/professional/request` will fail to deliver to any address you haven't
-manually verified with `aws sesv2 create-email-identity --email-identity <address>`
-(AWS emails a confirmation link to that address).
+`/verification/professional/request` and `/auth/email/request` will fail to deliver to
+any address you haven't manually verified with
+`aws sesv2 create-email-identity --email-identity <address>` (AWS emails a confirmation
+link to that address).
+
+## Bedrock: Anthropic use case details form
+
+Separately from IAM permissions, AWS/Anthropic require submitting a one-time "use case
+details" form for the account before Anthropic models on Bedrock will actually respond —
+`bedrock:InvokeModel` fails with "Model use case details have not been submitted for this
+account" until it's done. Not automatable; submit it from the Bedrock console (Model
+access page). `BedrockClassifierService` degrades gracefully without it — the domain
+classification is just skipped, org-email verification still works.
 
 ## Dev is not public
 

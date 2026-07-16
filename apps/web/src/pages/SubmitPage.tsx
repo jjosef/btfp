@@ -4,6 +4,7 @@ import { useCurrentUser } from '../lib/useCurrentUser.js';
 import { api } from '../lib/api.js';
 import { QuizDialog } from '../components/QuizDialog.js';
 import { ProfessionalVerificationDialog } from '../components/ProfessionalVerificationDialog.js';
+import { EmailSignInDialog } from '../components/EmailSignInDialog.js';
 
 const THING_TYPES = ['plant', 'food', 'medication', 'product', 'activity'];
 const PET_TYPES = ['dog', 'cat', 'horse'];
@@ -28,14 +29,21 @@ export function SubmitPage() {
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-neutral-800">Sign in to contribute</h1>
         <p className="mt-2 text-neutral-500">
-          We ask for a GitHub sign-in so we know a real person with some history is behind each entry.
+          GitHub proves a real person with some history is behind each entry. If you're a vet or
+          scientist without a GitHub account, sign in with your work email instead.
         </p>
-        <a
-          href="/api/auth/github"
-          className="mt-6 inline-block rounded-full bg-paw-500 px-6 py-3 font-semibold text-white hover:bg-paw-600"
-        >
-          Sign in with GitHub
-        </a>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <a
+            href="/api/auth/github"
+            className="inline-block rounded-full bg-paw-500 px-6 py-3 font-semibold text-white hover:bg-paw-600"
+          >
+            Sign in with GitHub
+          </a>
+          <EmailSignInDialog
+            onSignedIn={refresh}
+            triggerClassName="inline-block rounded-full border-2 border-paw-500 px-6 py-3 font-semibold text-paw-600 hover:bg-paw-50"
+          />
+        </div>
       </div>
     );
   }

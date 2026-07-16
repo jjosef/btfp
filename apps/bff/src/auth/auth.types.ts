@@ -1,7 +1,7 @@
-import type { OAuthProvider } from '@btfp/shared-types';
+import type { AuthProvider } from '@btfp/shared-types';
 
 export interface OAuthProfile {
-  provider: OAuthProvider;
+  provider: AuthProvider;
   providerAccountId: string;
   displayName: string;
   avatarUrl?: string;
@@ -11,7 +11,7 @@ export interface OAuthProfile {
 
 export interface AuthenticatedUser {
   id: string;
-  provider: OAuthProvider;
+  provider: AuthProvider;
   providerAccountId: string;
   displayName: string;
   verifiedContributor: boolean;
@@ -19,7 +19,7 @@ export interface AuthenticatedUser {
 
 export interface SessionJwtPayload {
   sub: string;
-  provider: OAuthProvider;
+  provider: AuthProvider;
   providerAccountId: string;
   displayName: string;
   verifiedContributor: boolean;
