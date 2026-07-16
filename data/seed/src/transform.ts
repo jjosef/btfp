@@ -84,6 +84,22 @@ export const THING_TYPES: ThingType[] = [
     createdAt: '',
     updatedAt: '',
   },
+  {
+    id: 'product',
+    name: 'Product',
+    description: 'Pet gear, household products, and other items.',
+    details: {},
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: 'activity',
+    name: 'Activity',
+    description: 'Situations and activities that put pets at risk.',
+    details: {},
+    createdAt: '',
+    updatedAt: '',
+  },
 ].map(stamp);
 
 export function transformDataset(raw: RawDataset): Thing[] {
@@ -155,4 +171,40 @@ export function transformDataset(raw: RawDataset): Thing[] {
   }
 
   return things;
+}
+
+export interface CuratedHazardsDataset {
+  metadata: {
+    compiled_by: string;
+  };
+  entries: CuratedHazardEntry[];
+}
+
+interface CuratedHazardEntry {
+  name: string;
+  thingType: 'product' | 'activity';
+  petTypes: string[];
+  severity: Severity;
+  hazard: string;
+  notes?: string;
+  source: string;
+  sourceUrl: string;
+}
+
+export function transformCuratedHazards(raw: CuratedHazardsDataset): Thing[] {
+  return raw.entries.map((entry) =>
+    stamp({
+      id: stableId(entry.thingType, entry.name),
+      name: entry.name,
+      otherNames: [],
+      thingTypeId: entry.thingType,
+      petTypes: entry.petTypes.map((petTypeId) => ({ petTypeId, severity: entry.severity })),
+      details: { hazard: entry.hazard, notes: entry.notes },
+      source: entry.source,
+      sourceUrl: entry.sourceUrl,
+      verified: true,
+      createdAt: '',
+      updatedAt: '',
+    }),
+  );
 }

@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "title": "Curated product and activity hazards for pets",
+    "compiled": "2026-07-15",
+    "compiled_by": "Manually researched and summarized from ASPCA, AVMA, Pet Poison Helpline, CPSC, and Cornell/AAHA veterinary sources for this project — not scraped verbatim from any single page. See each entry's sourceUrl for the original.",
+    "disclaimer": "Not a substitute for veterinary care. For a suspected poisoning or injury, contact a veterinarian immediately."
+  },
+  "entries": [
+    {
+      "name": "Retractable leashes",
+      "thingType": "product",
+      "petTypes": ["dog"],
+      "severity": "moderate",
+      "hazard": "The thin cord can cause deep lacerations, rope burn, or finger injury if it contacts skin while paying out at speed, and the plastic handle or metal clasp can break under load, letting the leash recoil into the owner's face or eyes.",
+      "notes": "A 2008 CPSC recall of roughly 223,000 SlyDog retractable leashes followed reports including a broken tooth and a displaced eye lens after the metal clasp broke.",
+      "source": "CPSC recall database; Consumer Reports",
+      "sourceUrl": "https://www.cpsc.gov/Recalls/2008/worldwise-inc-recalls-retractable-dog-leashes-metal-clasp-can-break-and-cause-facial"
+    },
+    {
+      "name": "Leaving a pet in a parked car",
+      "thingType": "activity",
+      "petTypes": ["dog", "cat"],
+      "severity": "severe",
+      "hazard": "A parked car's interior temperature rises about 20°F in 10 minutes and nearly 30°F in 20 minutes, even in mild weather. A dog's body temperature above roughly 105°F risks heatstroke. Cracking the windows does not meaningfully slow the rise.",
+      "notes": "AVMA reports hundreds of pet deaths from vehicle heat exhaustion every year.",
+      "source": "American Veterinary Medical Association (AVMA)",
+      "sourceUrl": "https://www.avma.org/resources-tools/pet-owners/petcare/hot-cars-and-loose-pets"
+    },
+    {
+      "name": "Essential oil diffusers (active/ultrasonic)",
+      "thingType": "product",
+      "petTypes": ["cat", "dog"],
+      "severity": "moderate",
+      "hazard": "Cats lack the liver enzyme (glucuronidase) needed to break down many essential oil compounds. Active/ultrasonic diffusers disperse microdroplets that can be inhaled or settle on fur and be ingested during grooming. Oils of particular concern include tea tree, wintergreen, pine, citrus (d-limonene), cinnamon, clove, eucalyptus, pennyroyal, and ylang ylang.",
+      "notes": "Signs include drooling, vomiting, tremors, wobbliness, and low body temperature.",
+      "source": "Pet Poison Helpline",
+      "sourceUrl": "https://www.petpoisonhelpline.com/blog/essential-oils-cats/"
+    },
+    {
+      "name": "Dog flea/tick spot-on products applied to cats",
+      "thingType": "product",
+      "petTypes": ["cat"],
+      "severity": "severe",
+      "hazard": "High-concentration (45-65%) permethrin spot-on products made for dogs are highly toxic to cats, which lack the enzyme needed to detoxify permethrin. Cats can also be poisoned secondhand by grooming a treated dog. Causes tremors, seizures, and hyperthermia; there is no antidote, only supportive care.",
+      "notes": "Low-concentration (~2%) permethrin sprays labeled for cats are not considered toxic to cats at that concentration.",
+      "source": "ASPCA Professional; veterinary literature",
+      "sourceUrl": "https://www.aspcapro.org/sites/default/files/d-veccs_april00_0.pdf"
+    },
+    {
+      "name": "Ice melt / rock salt de-icing products",
+      "thingType": "product",
+      "petTypes": ["dog", "cat"],
+      "severity": "mild",
+      "hazard": "A chemical irritant to paw pads, causing burning, cracking, or frostbite-like injury when pellets lodge between toes, and can cause vomiting or diarrhea if licked off paws or ingested directly.",
+      "notes": "Wiping paws with a damp cloth after walking on treated ground reduces both the skin and ingestion risk.",
+      "source": "ASPCA",
+      "sourceUrl": "https://www.aspca.org/news/keeping-pets-safe-during-winter-dangers-ice-melts"
+    },
+    {
+      "name": "Swimming in or drinking from water with a blue-green algae bloom",
+      "thingType": "activity",
+      "petTypes": ["dog", "cat", "horse"],
+      "severity": "severe",
+      "hazard": "Cyanobacteria blooms in stagnant lakes, ponds, and rivers can produce microcystin and anatoxin, which can cause liver failure or neurologic collapse within hours. Dogs can also be poisoned by licking algae off their fur after swimming. There is no antidote.",
+      "notes": "Blooms often appear as bluish-green scum or foam on the water's surface, especially in hot weather.",
+      "source": "Cornell University College of Veterinary Medicine; AAHA",
+      "sourceUrl": "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-topics/blue-green-algae-poisoning-cyanobacteria-toxicosis"
+    },
+    {
+      "name": "Unused fabric softener dryer sheets",
+      "thingType": "product",
+      "petTypes": ["dog", "cat"],
+      "severity": "moderate",
+      "hazard": "Unused dryer sheets contain cationic detergents that are corrosive to mucous membranes. Chewing one can cause chemical burns or ulcers in the mouth, esophagus, and stomach, and the sheet itself can cause an intestinal obstruction.",
+      "notes": "Signs include excessive drooling, gulping, and vomiting (with or without blood).",
+      "source": "ASPCA",
+      "sourceUrl": "https://www.aspca.org/news/pet-poisons-be-mindful-these-household-products-and-cleaning-agents"
+    }
+  ]
+}

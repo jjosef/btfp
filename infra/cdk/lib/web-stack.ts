@@ -121,7 +121,13 @@ export class WebStack extends cdk.Stack {
       certificate,
       webAclId: webAcl.attrArn,
       defaultRootObject: 'index.html',
-      errorResponses: [{ httpStatus: 404, responseHttpStatus: 200, responsePagePath: '/index.html' }],
+      // SPA client-side routes (e.g. /things/:id) have no matching S3 object.
+      // A private bucket behind OAC returns 403, not 404, for missing keys —
+      // both need to fall back to index.html or React Router never mounts.
+      errorResponses: [
+        { httpStatus: 404, responseHttpStatus: 200, responsePagePath: '/index.html' },
+        { httpStatus: 403, responseHttpStatus: 200, responsePagePath: '/index.html' },
+      ],
     });
 
     for (const domainName of allDomainNames) {

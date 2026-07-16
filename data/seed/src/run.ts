@@ -4,7 +4,14 @@ import path from 'node:path';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { BatchWriteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { PetType, Thing, ThingType } from '@btfp/shared-types';
-import { PET_TYPES, THING_TYPES, transformDataset, type RawDataset } from './transform.js';
+import {
+  PET_TYPES,
+  THING_TYPES,
+  transformDataset,
+  transformCuratedHazards,
+  type RawDataset,
+  type CuratedHazardsDataset,
+} from './transform.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT_TABLE_NAME = process.env.CONTENT_TABLE_NAME ?? 'btfp-dev-content';
@@ -63,6 +70,10 @@ async function main() {
   const datasetPath = path.join(__dirname, '../source/dog-toxicity-dataset.json');
   const raw = JSON.parse(await readFile(datasetPath, 'utf-8')) as RawDataset;
   const things = transformDataset(raw);
+
+  const hazardsPath = path.join(__dirname, '../source/product-activity-hazards.json');
+  const rawHazards = JSON.parse(await readFile(hazardsPath, 'utf-8')) as CuratedHazardsDataset;
+  things.push(...transformCuratedHazards(rawHazards));
 
   console.log(
     `Seeding ${PET_TYPES.length} pet types, ${THING_TYPES.length} thing types, ${things.length} things ` +
