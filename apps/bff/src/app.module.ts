@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { VerificationModule } from './verification/verification.module.js';
 import { ContributionsModule } from './contributions/contributions.module.js';
 import { SitemapModule } from './sitemap/sitemap.module.js';
+import { McpModule } from './mcp/mcp.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SitemapModule } from './sitemap/sitemap.module.js';
     VerificationModule,
     ContributionsModule,
     SitemapModule,
+    McpModule,
   ],
 })
 export class AppModule {}

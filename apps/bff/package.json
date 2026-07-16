@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsc-watch --outDir dist-dev --onSuccess \"node dist-dev/main.js\"",
     "build": "node scripts/build-lambda.mjs",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint src"
@@ -37,7 +37,7 @@
     "@types/passport-github2": "^1.2.9",
     "@types/passport-google-oauth20": "^2.0.16",
     "esbuild": "^0.24.2",
-    "tsx": "^4.19.0",
+    "tsc-watch": "^7.2.1",
     "typescript": "^5.8.0"
   }
 }

@@ -18,6 +18,9 @@ Helpline +1-855-764-7661.
 - [Thing types](/api/thing-types)
 - [OpenAPI spec](/api/openapi.json): full machine-readable API contract.
 - [Sitemap](/sitemap.xml): every browsable URL on the site.
+- [MCP server](/api/mcp): Streamable HTTP MCP endpoint (`search_things`,
+  `get_thing`, `list_pet_types`, `list_thing_types` tools) for MCP-aware
+  clients — no auth required, POST JSON-RPC 2.0 messages.
 
 ## Notes for automated use
 
