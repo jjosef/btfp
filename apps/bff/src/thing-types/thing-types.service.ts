@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { GetCommand, PutCommand, ScanCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { ThingType } from '@btfp/shared-types';
 import { DYNAMO_DOC_CLIENT, CONTENT_TABLE_NAME } from '../dynamo/dynamo.constants.js';
+import { stripDynamoKeys } from '../dynamo/dynamo.utils.js';
 import type { CreateThingTypeDto } from './dto/create-thing-type.dto.js';
 
 @Injectable()
@@ -17,14 +18,14 @@ export class ThingTypesService {
         ExpressionAttributeValues: { ':meta': 'META', ':prefix': 'THINGTYPE#' },
       }),
     );
-    return (result.Items ?? []) as ThingType[];
+    return (result.Items ?? []).map((item) => stripDynamoKeys(item) as ThingType);
   }
 
   async getById(id: string): Promise<ThingType | null> {
     const result = await this.db.send(
       new GetCommand({ TableName: CONTENT_TABLE_NAME, Key: { PK: `THINGTYPE#${id}`, SK: 'META' } }),
     );
-    return (result.Item as ThingType | undefined) ?? null;
+    return result.Item ? (stripDynamoKeys(result.Item) as ThingType) : null;
   }
 
   async create(dto: CreateThingTypeDto): Promise<ThingType> {

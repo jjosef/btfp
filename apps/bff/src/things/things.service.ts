@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { GetCommand, PutCommand, QueryCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { Thing } from '@btfp/shared-types';
 import { DYNAMO_DOC_CLIENT, CONTENT_TABLE_NAME } from '../dynamo/dynamo.constants.js';
+import { stripDynamoKeys } from '../dynamo/dynamo.utils.js';
 import { SearchService } from '../search/search.service.js';
 
 @Injectable()
@@ -15,7 +16,7 @@ export class ThingsService {
     const result = await this.db.send(
       new GetCommand({ TableName: CONTENT_TABLE_NAME, Key: { PK: `THING#${id}`, SK: 'META' } }),
     );
-    return (result.Item as Thing | undefined) ?? null;
+    return result.Item ? (stripDynamoKeys(result.Item) as Thing) : null;
   }
 
   async listByThingType(thingTypeId: string, limit = 50): Promise<Thing[]> {
@@ -28,7 +29,7 @@ export class ThingsService {
         Limit: limit,
       }),
     );
-    return (result.Items ?? []) as Thing[];
+    return (result.Items ?? []).map((item) => stripDynamoKeys(item) as Thing);
   }
 
   /** Writes an already-built Thing (used by the seed loader and by contribution approval). */

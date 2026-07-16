@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { GetCommand, PutCommand, ScanCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { PetType } from '@btfp/shared-types';
 import { DYNAMO_DOC_CLIENT, CONTENT_TABLE_NAME } from '../dynamo/dynamo.constants.js';
+import { stripDynamoKeys } from '../dynamo/dynamo.utils.js';
 import type { CreatePetTypeDto } from './dto/create-pet-type.dto.js';
 
 @Injectable()
@@ -17,14 +18,14 @@ export class PetTypesService {
         ExpressionAttributeValues: { ':meta': 'META', ':prefix': 'PETTYPE#' },
       }),
     );
-    return (result.Items ?? []) as PetType[];
+    return (result.Items ?? []).map((item) => stripDynamoKeys(item) as PetType);
   }
 
   async getById(id: string): Promise<PetType | null> {
     const result = await this.db.send(
       new GetCommand({ TableName: CONTENT_TABLE_NAME, Key: { PK: `PETTYPE#${id}`, SK: 'META' } }),
     );
-    return (result.Item as PetType | undefined) ?? null;
+    return result.Item ? (stripDynamoKeys(result.Item) as PetType) : null;
   }
 
   async create(dto: CreatePetTypeDto): Promise<PetType> {

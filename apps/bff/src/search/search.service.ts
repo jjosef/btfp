@@ -3,6 +3,7 @@ import { ScanCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import Fuse from 'fuse.js';
 import type { Thing } from '@btfp/shared-types';
 import { DYNAMO_DOC_CLIENT, CONTENT_TABLE_NAME } from '../dynamo/dynamo.constants.js';
+import { stripDynamoKeys } from '../dynamo/dynamo.utils.js';
 
 const CACHE_TTL_MS = 60_000;
 
@@ -65,7 +66,7 @@ export class SearchService {
           ExclusiveStartKey: lastKey,
         }),
       );
-      items.push(...((result.Items ?? []) as Thing[]));
+      items.push(...(result.Items ?? []).map((item) => stripDynamoKeys(item) as Thing));
       lastKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
     } while (lastKey);
 
