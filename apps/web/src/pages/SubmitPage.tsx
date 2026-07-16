@@ -48,22 +48,25 @@ export function SubmitPage() {
     );
   }
 
-  if (user.professional?.status === 'awaiting_review') {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-neutral-800">Almost there</h1>
-        <p className="mt-2 text-neutral-500">
-          Your organization ({user.professional.domain}) is confirmed and waiting on a quick human
-          review. You can also just take the quiz now instead of waiting.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <QuizDialog onPassed={refresh} />
-        </div>
-      </div>
-    );
-  }
-
   if (!user.verifiedContributor) {
+    // A pending professional review doesn't block someone who's already
+    // gotten in some other way (e.g. the quiz) — only shown when that's
+    // the reason they're not verified yet.
+    if (user.professional?.status === 'awaiting_review') {
+      return (
+        <div className="mx-auto max-w-xl px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-neutral-800">Almost there</h1>
+          <p className="mt-2 text-neutral-500">
+            Your organization ({user.professional.domain}) is confirmed and waiting on a quick human
+            review. You can also just take the quiz now instead of waiting.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <QuizDialog onPassed={refresh} />
+          </div>
+        </div>
+      );
+    }
+
     const wasRejected = user.professional?.status === 'rejected';
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
@@ -129,8 +132,11 @@ export function SubmitPage() {
       <h1 className="text-2xl font-bold text-neutral-800">Add a dangerous thing</h1>
       <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-neutral-700">Name</label>
+          <label htmlFor="thing-name" className="block text-sm font-semibold text-neutral-700">
+            Name
+          </label>
           <input
+            id="thing-name"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -139,8 +145,11 @@ export function SubmitPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-neutral-700">Type</label>
+          <label htmlFor="thing-type" className="block text-sm font-semibold text-neutral-700">
+            Type
+          </label>
           <select
+            id="thing-type"
             value={thingTypeId}
             onChange={(e) => setThingTypeId(e.target.value)}
             className="mt-1 w-full rounded-lg border border-paw-200 px-3 py-2 capitalize"
@@ -170,8 +179,11 @@ export function SubmitPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-neutral-700">Why is it dangerous?</label>
+          <label htmlFor="thing-notes" className="block text-sm font-semibold text-neutral-700">
+            Why is it dangerous?
+          </label>
           <textarea
+            id="thing-notes"
             required
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -181,8 +193,11 @@ export function SubmitPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-neutral-700">Source (optional)</label>
+          <label htmlFor="thing-source" className="block text-sm font-semibold text-neutral-700">
+            Source (optional)
+          </label>
           <input
+            id="thing-source"
             value={source}
             onChange={(e) => setSource(e.target.value)}
             placeholder="Vet, article, personal experience…"

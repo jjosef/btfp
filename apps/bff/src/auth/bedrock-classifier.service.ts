@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
+import type { SearchResultSummary } from './search-history.service.js';
 
 const CLASSIFICATIONS = [
   'veterinary_clinic',
@@ -15,19 +16,51 @@ export interface DomainClassification {
   reasoning: string;
 }
 
+export interface DomainEvidence {
+  homepageText?: string | null;
+  searchResults?: SearchResultSummary[] | null;
+}
+
 const MODEL_ID = process.env.BEDROCK_INFERENCE_PROFILE_ID ?? 'us.anthropic.claude-haiku-4-5-20251001-v1:0';
 
+function buildPrompt(domain: string, evidence?: DomainEvidence): string {
+  const parts = [
+    `Assess the email domain "${domain}" for someone claiming to be a veterinarian or scientist ` +
+      'contributing to a pet-safety database. Classify what kind of organization it likely is, and ' +
+      "in your reasoning say whether the evidence below actually supports it being a real, " +
+      'established organization — or whether there\'s no independent trace of it existing.',
+  ];
+
+  parts.push(
+    evidence?.homepageText
+      ? `Homepage text (fetched live from the domain):\n${evidence.homepageText}`
+      : "The domain's homepage couldn't be fetched (site down, blocks bots, or resolves privately).",
+  );
+
+  parts.push(
+    evidence?.searchResults?.length
+      ? `Independent web search results for "${domain}":\n${evidence.searchResults
+          .map((r, i) => `${i + 1}. ${r.title} — ${r.snippet} (${r.link})`)
+          .join('\n')}`
+      : 'No independent web search results were found for this domain.',
+  );
+
+  return parts.join('\n\n');
+}
+
 /**
- * A signal for the human reviewer, not a gate — an LLM guessing from a
- * domain name can't actually prove an organization is real. If Bedrock is
- * unavailable or errors, verification still proceeds without a label.
+ * A signal for the human reviewer, not a gate — grounded in real evidence
+ * (the domain's own homepage, independent search results) when available,
+ * but still just an LLM's read of that evidence, not proof. If Bedrock or
+ * either evidence source is unavailable, verification still proceeds
+ * without that signal.
  */
 @Injectable()
 export class BedrockClassifierService {
   private readonly logger = new Logger(BedrockClassifierService.name);
   private readonly client = new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? 'us-east-1' });
 
-  async classifyDomain(domain: string): Promise<DomainClassification | null> {
+  async classifyDomain(domain: string, evidence?: DomainEvidence): Promise<DomainClassification | null> {
     try {
       const response = await this.client.send(
         new ConverseCommand({
@@ -35,14 +68,7 @@ export class BedrockClassifierService {
           messages: [
             {
               role: 'user',
-              content: [
-                {
-                  text:
-                    `Classify the email domain "${domain}" for someone claiming to be a veterinarian or ` +
-                    'scientist contributing to a pet-safety database. Use only the domain name itself ' +
-                    "(you don't have web access) to make your best guess.",
-                },
-              ],
+              content: [{ text: buildPrompt(domain, evidence) }],
             },
           ],
           toolConfig: {
@@ -56,7 +82,12 @@ export class BedrockClassifierService {
                       type: 'object',
                       properties: {
                         classification: { type: 'string', enum: [...CLASSIFICATIONS] },
-                        reasoning: { type: 'string', description: 'One sentence explaining the guess.' },
+                        reasoning: {
+                          type: 'string',
+                          description:
+                            'One or two sentences explaining the guess, referencing the homepage/search ' +
+                            'evidence when it was provided, or noting its absence.',
+                        },
                       },
                       required: ['classification', 'reasoning'],
                     },

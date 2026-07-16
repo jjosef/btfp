@@ -32,6 +32,7 @@ CLOUDFRONT-scope WAF WebACL; also simplest for a single-region MVP). No VPC, no 
 | WAF (2 rule groups) | ~$6-8/mo |
 | SES | ~free — $0.10/1,000 emails, and this only sends verification codes |
 | Bedrock (Claude Haiku, domain classification) | ~free — a few cents per 1,000 calls |
+| Brave Search (optional, org-legitimacy signal) | free tier covers this app's volume |
 
 Dev + prod together should land well under $50/mo unless traffic spikes hard. The two
 biggest levers if it doesn't: drop WAF's rate-limit rule, or merge dev+prod's WAF into a

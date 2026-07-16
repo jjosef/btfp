@@ -12,6 +12,21 @@ export async function createApp(adapter: FastifyAdapter): Promise<NestFastifyApp
   });
 
   await app.register(fastifyCookie);
+
+  // Passport (built for Express) calls res.setHeader()/res.end() directly
+  // when a strategy issues a redirect (OAuth2Strategy.redirect, used by
+  // GithubStrategy/GoogleStrategy) — Fastify's reply wrapper doesn't have
+  // either. Delegate both to the underlying raw Node response, which does.
+  // reply.statusCode itself is already a real, settable property on
+  // Fastify's reply (proxies to the raw response), so nothing needed there.
+  // See https://github.com/nestjs/nest/issues/5702.
+  app.getHttpAdapter().getInstance().addHook('onRequest', (_request, reply, done) => {
+    const patchable = reply as unknown as { setHeader: typeof reply.raw.setHeader; end: typeof reply.raw.end };
+    patchable.setHeader = reply.raw.setHeader.bind(reply.raw);
+    patchable.end = reply.raw.end.bind(reply.raw);
+    done();
+  });
+
   app.enableCors({ origin: process.env.WEB_ORIGIN ?? true, credentials: true });
   // sitemap.xml/robots.txt are excluded so they can live at the site root instead of under /api.
   app.setGlobalPrefix('api', { exclude: ['sitemap.xml', 'robots.txt'] });

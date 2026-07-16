@@ -9,6 +9,8 @@ import { GoogleStrategy } from './google.strategy.js';
 import { EmailCodeService } from './email-code.service.js';
 import { BedrockClassifierService } from './bedrock-classifier.service.js';
 import { EmailSenderService } from './email-sender.service.js';
+import { HomepageFetcherService } from './homepage-fetcher.service.js';
+import { SearchHistoryService } from './search-history.service.js';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { EmailSenderService } from './email-sender.service.js';
     EmailCodeService,
     BedrockClassifierService,
     EmailSenderService,
+    HomepageFetcherService,
+    SearchHistoryService,
   ],
   exports: [AuthService, UsersService, EmailCodeService],
 })

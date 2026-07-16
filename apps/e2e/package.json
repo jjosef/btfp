@@ -1,0 +1,21 @@
+{
+  "name": "@btfp/e2e",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx scripts/generate.ts",
+    "test": "playwright test",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint scripts playwright.config.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.716.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}

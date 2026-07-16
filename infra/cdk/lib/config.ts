@@ -17,6 +17,11 @@ export const DEV_BASIC_AUTH_PASSWORD =
 // Shared by dev + prod; the EmailStack SES identity is for the whole domain.
 export const SES_FROM_ADDRESS = process.env.BTFP_SES_FROM_ADDRESS ?? `noreply@${ROOT_DOMAIN}`;
 
+// Catch-all inbound mail (any address @ROOT_DOMAIN) forwards here — see
+// EmailStack. Not a secret, just an address, so a real default is fine
+// (same reasoning as SES_FROM_ADDRESS above).
+export const FORWARD_TO_ADDRESS = process.env.BTFP_FORWARD_TO_ADDRESS ?? 'john.josef@gmail.com';
+
 // Session JWT signing secret. Deliberately separate per environment — never
 // commit real values. Was previously missing entirely, silently falling
 // back to a hardcoded (and public, since this repo is public) default.
@@ -25,6 +30,27 @@ export const PROD_JWT_SECRET = process.env.BTFP_PROD_JWT_SECRET ?? 'REPLACE_BEFO
 
 // Claude Haiku 4.5 needs the inference profile, not the bare model id — see docs/infra.md.
 export const BEDROCK_INFERENCE_PROFILE_ID = 'us.anthropic.claude-haiku-4-5-20251001-v1:0';
+
+// Optional: Brave Search API, used as an evidence signal for
+// professional-verification's org-legitimacy check (see
+// docs/verification-flow.md). Shared by dev + prod, same key. Left empty
+// rather than a placeholder — SearchHistoryService degrades gracefully
+// (returns null) when unset, same as everything else in that pipeline.
+// (Was Google Custom Search JSON API — Google closed that API to new
+// customers, so it's been retired in favor of Brave.)
+export const BRAVE_SEARCH_API_KEY = process.env.BTFP_BRAVE_SEARCH_API_KEY ?? '';
+
+// GitHub OAuth app — only registered for prod so far (GitHub allows one
+// callback URL per app, and dev is Basic-Auth-walled and not meant for
+// public OAuth testing anyway — see docs/verification-flow.md). Client ID
+// isn't sensitive (every OAuth redirect URL exposes it), so a real default
+// is fine here same as the other non-secret values above. The client
+// *secret* is deliberately NOT here — it lives in SSM Parameter Store
+// (SecureString, see docs/verification-flow.md) and the Lambda fetches it
+// at cold start (apps/bff/src/lambda.ts), rather than sitting in this repo
+// or as a plaintext CloudFormation/Lambda-console-visible env var.
+export const GITHUB_CLIENT_ID = process.env.BTFP_GITHUB_CLIENT_ID ?? 'Ov23lidrry3aBdRe4yUg';
+export const GITHUB_CLIENT_SECRET_PARAM_NAME = '/btfp/github-client-secret';
 
 export interface EnvConfig {
   envName: 'dev' | 'prod';

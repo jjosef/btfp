@@ -37,12 +37,48 @@ Either way, the mechanism itself:
    must resolve real MX records, and is rate-limited to one code per minute
    (`UsersService.canRequestNewCode`) to make the public, unauthenticated request endpoint
    harder to use as a spam vector.
-2. **Bedrock classification** (`bedrock-classifier.service.ts`): Claude Haiku, via Bedrock's
-   Converse API with forced tool-call output, guesses what kind of org the domain looks like
-   (veterinary clinic, university/research, etc.) from the domain name alone — no web
-   access. This is **assistive only, never a gate**: an LLM guessing from a domain string
-   can't actually prove an organization is real, and if Bedrock errors or is unavailable,
-   verification proceeds without a label rather than blocking.
+2. **Evidence gathering + Bedrock classification**: rather than guessing from the bare
+   domain string, two real-evidence signals are gathered first and handed to Claude Haiku
+   (`bedrock-classifier.service.ts`, Converse API, forced tool-call output):
+   - `homepage-fetcher.service.ts` fetches the domain's own homepage (`https://domain`,
+     falling back to `https://www.domain`) server-side and strips it to plain text. It's an
+     SSRF-safe fetch: DNS is resolved and validated up front (rejects private/loopback/
+     link-local addresses, including the cloud metadata endpoint), the connection is pinned
+     to that validated IP rather than re-resolving at connect time (closes the DNS-rebinding
+     TOCTOU gap), and redirects/response size/timeout are all capped.
+   - `search-history.service.ts` queries the domain via the **Brave Search API** (not
+     scraping search-results pages — that's a ToS violation for Google/Bing and something
+     their bot defenses actively block anyway) for independent evidence the organization
+     has some history (directory listings, news mentions, review sites). Optional: if
+     `BRAVE_SEARCH_API_KEY` isn't set, this signal is silently skipped.
+
+     Started as Google's Custom Search JSON API, but Google has closed that API to new
+     customers (deprecated for anyone without prior access, migration deadline
+     2027-01-01) — confirmed via Google's own support forum after every plausible
+     configuration mistake was ruled out (project/key match, API actually enabled,
+     billing linked, unrestricted fresh key, disable/re-enable cycle). Brave needs no
+     GCP project or billing account.
+
+     Also checked whether Bedrock itself could do this natively instead of calling a
+     search API ourselves: the plain Converse API can't — verified empirically (a
+     `ConverseCommand` with `additionalModelRequestFields: { tools: [{ type:
+     "web_search_20250305", ... }] }` gets rejected with a `ValidationException` whose
+     error message enumerates every tool type Bedrock's hosted Claude models actually
+     accept, and none of them are a `web_search` variant). AWS did announce a *separate*
+     product, **Web Search on Amazon Bedrock AgentCore** (2026-06-17), which does do
+     this — but as an MCP connector through AgentCore Gateway, a different service
+     surface that would mean standing up a Gateway resource and restructuring this
+     single forced-tool-choice classification call into a multi-turn agent loop. Not
+     worth it for one assistive signal; worth reconsidering if this app ever grows a
+     broader agent architecture.
+
+   Claude Haiku then classifies what kind of org the domain looks like (veterinary clinic,
+   university/research, etc.) and its reasoning references whichever evidence was actually
+   available. This is still **assistive only, never a gate** — even grounded in real
+   evidence, an LLM's read of a homepage and some search snippets can't *prove* an
+   organization is real or that the applicant works there; a human reviewer makes the actual
+   call. If Bedrock or either evidence source is unavailable, verification proceeds without
+   that signal rather than blocking.
    **Requires a one-time manual step**: AWS/Anthropic require submitting a "use case
    details" form for the account before Anthropic models on Bedrock will actually respond —
    until that's done, `bedrock:InvokeModel` calls fail and classification is silently
@@ -98,3 +134,18 @@ Register OAuth apps at GitHub (Settings → Developer settings → OAuth Apps) a
 Google sign-in too, Google Cloud Console. Set the client id/secret and callback URLs in
 `apps/bff/.env` (copy from `.env.example`). Callback URLs must match exactly what's
 registered with each provider.
+
+## Setting up the Brave Search signal (optional)
+
+1. Sign up at [brave.com/search/api](https://brave.com/search/api/) and create an API key —
+   no Google Cloud project or billing account needed, unlike the Google Custom Search API
+   this replaced (see the note in [Path 2](#path-2-professional-organizational-email) above
+   for why that one was abandoned).
+2. Set `BTFP_BRAVE_SEARCH_API_KEY` in `infra/cdk/.env.deploy.local` (gitignored — never
+   commit real values), then redeploy `BtfpDev/Api` (and `BtfpProd/Api` once that stage
+   exists) to pick it up.
+
+Note that `/auth/email/request`'s rate limit (`UsersService.canRequestNewCode`) is 1
+request/minute *per email address*, not global, so it doesn't by itself cap total daily
+search volume — worth knowing if you ever see unexpected Brave billing. Leaving the env var
+unset just skips this evidence signal entirely; nothing else in the flow depends on it.

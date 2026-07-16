@@ -5,6 +5,8 @@ import { UsersService } from './users.service.js';
 import { BedrockClassifierService } from './bedrock-classifier.service.js';
 import { EmailSenderService } from './email-sender.service.js';
 import { isFreeEmailDomain } from './free-email-domains.js';
+import { HomepageFetcherService } from './homepage-fetcher.service.js';
+import { SearchHistoryService } from './search-history.service.js';
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 
@@ -29,6 +31,8 @@ export class EmailCodeService {
     private readonly users: UsersService,
     private readonly bedrock: BedrockClassifierService,
     private readonly emailSender: EmailSenderService,
+    private readonly homepageFetcher: HomepageFetcherService,
+    private readonly searchHistory: SearchHistoryService,
   ) {}
 
   async request(user: UserAccountRef, email: string): Promise<{ orgClassification?: string }> {
@@ -52,7 +56,11 @@ export class EmailCodeService {
       throw new BadRequestException('Please wait a minute before requesting another code.');
     }
 
-    const classification = await this.bedrock.classifyDomain(domain);
+    const [homepageText, searchResults] = await Promise.all([
+      this.homepageFetcher.fetchHomepageText(domain),
+      this.searchHistory.searchDomain(domain),
+    ]);
+    const classification = await this.bedrock.classifyDomain(domain, { homepageText, searchResults });
 
     const code = String(randomInt(100000, 999999));
     await this.users.setProfessionalPending({

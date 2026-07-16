@@ -12,6 +12,7 @@ const INTERNAL_FIELDS = [
   'professionalCodeHash',
   'professionalCodeExpiresAt',
   'professionalCodeIssuedAt',
+  'professionalCodeTestOnly',
 ] as const;
 
 const CODE_RESEND_COOLDOWN_MS = 60 * 1000;
@@ -148,6 +149,11 @@ export class UsersService {
     orgClassification?: string;
     orgClassificationReasoning?: string;
   }): Promise<void> {
+    // Plaintext code is only ever written outside prod, for the E2E test-code
+    // endpoint (auth.controller.ts) — see docs/e2e-testing.md. Gated here,
+    // not just at the read side, so a prod table never contains it at all.
+    const isProd = process.env.STAGE === 'prod';
+
     await this.db.send(
       new UpdateCommand({
         TableName: USERS_TABLE_NAME,
@@ -155,7 +161,8 @@ export class UsersService {
         UpdateExpression:
           'SET professional = :professional, professionalEmail = :email, ' +
           'professionalCodeHash = :codeHash, professionalCodeExpiresAt = :codeExpiresAt, ' +
-          'professionalCodeIssuedAt = :codeIssuedAt',
+          'professionalCodeIssuedAt = :codeIssuedAt' +
+          (isProd ? '' : ', professionalCodeTestOnly = :codeTestOnly'),
         ExpressionAttributeValues: {
           ':professional': {
             status: 'pending_email_confirmation',
@@ -168,9 +175,26 @@ export class UsersService {
           ':codeHash': hashCode(params.code),
           ':codeExpiresAt': params.codeExpiresAt,
           ':codeIssuedAt': new Date().toISOString(),
+          ...(isProd ? {} : { ':codeTestOnly': params.code }),
         },
       }),
     );
+  }
+
+  /**
+   * E2E-testing only: returns the plaintext code issued for an email/OAuth
+   * account, so automated tests can complete real sign-in without reading an
+   * inbox. Refuses outright in prod (defense in depth — setProfessionalPending
+   * above never writes the plaintext field there in the first place, so this
+   * would return null anyway, but the explicit check keeps the guarantee
+   * independent of that write-side behavior).
+   */
+  async getTestCode(provider: string, providerAccountId: string): Promise<string | null> {
+    if (process.env.STAGE === 'prod') return null;
+    const result = await this.db.send(
+      new GetCommand({ TableName: USERS_TABLE_NAME, Key: { PK: this.pk(provider, providerAccountId) } }),
+    );
+    return (result.Item?.professionalCodeTestOnly as string | undefined) ?? null;
   }
 
   /** Hashes and compares `code`; on success moves status to awaiting_review and clears the code. */
@@ -189,7 +213,7 @@ export class UsersService {
         Key: { PK: this.pk(provider, providerAccountId) },
         UpdateExpression:
           'SET professional.#status = :status ' +
-          'REMOVE professionalCodeHash, professionalCodeExpiresAt, professionalCodeIssuedAt',
+          'REMOVE professionalCodeHash, professionalCodeExpiresAt, professionalCodeIssuedAt, professionalCodeTestOnly',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'awaiting_review' },
       }),

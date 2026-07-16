@@ -5,12 +5,16 @@ import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { EnvConfig } from './config.js';
 import {
   BEDROCK_INFERENCE_PROFILE_ID,
+  BRAVE_SEARCH_API_KEY,
   DEV_JWT_SECRET,
+  GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET_PARAM_NAME,
   PROD_JWT_SECRET,
   ROOT_DOMAIN,
   SES_FROM_ADDRESS,
@@ -35,6 +39,19 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
+    const isProd = props.envConfig.envName === 'prod';
+
+    // GitHub OAuth app is only registered for prod right now (see
+    // config.ts) — dev gets none of these env vars and GithubStrategy just
+    // falls back to its "not-configured" placeholder, same as before.
+    const githubEnv: Record<string, string> = isProd
+      ? {
+          GITHUB_CLIENT_ID,
+          GITHUB_CLIENT_SECRET_PARAM: GITHUB_CLIENT_SECRET_PARAM_NAME,
+          GITHUB_CALLBACK_URL: `https://${ROOT_DOMAIN}/api/auth/github/callback`,
+        }
+      : {};
+
     const handler = new lambda.Function(this, 'BffFunction', {
       functionName: `btfp-${props.envConfig.envName}-bff`,
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -49,17 +66,31 @@ export class ApiStack extends cdk.Stack {
         USERS_TABLE_NAME: props.usersTable.tableName,
         SES_FROM_ADDRESS,
         BEDROCK_INFERENCE_PROFILE_ID,
-        JWT_SECRET: props.envConfig.envName === 'prod' ? PROD_JWT_SECRET : DEV_JWT_SECRET,
+        JWT_SECRET: isProd ? PROD_JWT_SECRET : DEV_JWT_SECRET,
+        BRAVE_SEARCH_API_KEY,
+        ...githubEnv,
       },
     });
 
     props.contentTable.grantReadWriteData(handler);
     props.usersTable.grantReadWriteData(handler);
 
+    if (isProd) {
+      ssm.StringParameter.fromSecureStringParameterAttributes(this, 'GithubClientSecretParam', {
+        parameterName: GITHUB_CLIENT_SECRET_PARAM_NAME,
+      }).grantRead(handler);
+    }
+
+    // In SES sandbox mode, SendEmail is authorized against BOTH the sending
+    // identity (our domain) and the recipient's identity ARN when that
+    // recipient is itself a verified identity — which every sandbox test
+    // recipient necessarily is. Scoping this to just the domain identity
+    // works in production SES but 403s in sandbox, so wildcard the resource
+    // instead of trying to enumerate recipients.
     handler.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['ses:SendEmail', 'ses:SendRawEmail'],
-        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/${ROOT_DOMAIN}`],
+        resources: [`arn:aws:ses:${this.region}:${this.account}:identity/*`],
       }),
     );
 

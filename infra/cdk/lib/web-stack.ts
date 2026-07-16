@@ -174,12 +174,42 @@ export class WebStack extends cdk.Stack {
       runtime: cloudfront.FunctionRuntime.JS_2_0,
     });
 
+    // SPA client-side routes (e.g. /things/:id) have no matching S3 object.
+    // Rewriting the request URI here — before it ever reaches S3 — means S3
+    // always returns a real 200 for those paths, so no error-response
+    // rewriting is needed at all. That matters because CloudFront's
+    // distribution-level errorResponses can't be scoped to one behavior: an
+    // earlier version of this stack used errorResponses for the SPA
+    // fallback, and it silently rewrote genuine 404s from the /api/*
+    // behavior (a real NotFoundException from the BFF) into 200 + index.html
+    // too. Scoping the fix to a viewer-request function on just the default
+    // (S3) behavior avoids that entirely. Heuristic: a request with no file
+    // extension in its last path segment is a client-side route, not a
+    // static asset.
+    const spaFallbackFunction = new cloudfront.Function(this, 'SpaFallbackFunction', {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          var lastSegment = uri.split('/').pop();
+          if (lastSegment.indexOf('.') === -1) {
+            request.uri = '/index.html';
+          }
+          return request;
+        }
+      `),
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
+    });
+
     this.distribution = new cloudfront.Distribution(this, 'Distribution', {
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(this.siteBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         responseHeadersPolicy: noIndexPolicy,
+        functionAssociations: [
+          { function: spaFallbackFunction, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST },
+        ],
       },
       additionalBehaviors: {
         '/api/*': { origin: apiOrigin, ...apiBehavior, responseHeadersPolicy: noIndexPolicy },
@@ -200,13 +230,6 @@ export class WebStack extends cdk.Stack {
       certificate,
       webAclId: webAcl.attrArn,
       defaultRootObject: 'index.html',
-      // SPA client-side routes (e.g. /things/:id) have no matching S3 object.
-      // A private bucket behind OAC returns 403, not 404, for missing keys —
-      // both need to fall back to index.html or React Router never mounts.
-      errorResponses: [
-        { httpStatus: 404, responseHttpStatus: 200, responsePagePath: '/index.html' },
-        { httpStatus: 403, responseHttpStatus: 200, responsePagePath: '/index.html' },
-      ],
     });
 
     for (const domainName of allDomainNames) {

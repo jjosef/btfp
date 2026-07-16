@@ -17,6 +17,9 @@ without it, but sign-in won't work until GitHub OAuth credentials are set (see
 pnpm turbo run lint typecheck build
 ```
 
+For end-to-end coverage of a real user flow, see [e2e-testing.md](e2e-testing.md) — generate
+a Playwright test from a plain-English description rather than writing one by hand.
+
 ## Conventions
 
 - TypeScript everywhere, `workspace:*` for internal package references.

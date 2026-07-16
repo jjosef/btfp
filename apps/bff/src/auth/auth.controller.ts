@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Post,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service.js';
@@ -68,6 +80,38 @@ export class AuthController {
 
     this.setSessionCookie(res, this.authService.issueSessionToken(user));
     res.send({ confirmed: true });
+  }
+
+  /**
+   * E2E-testing only: lets automated tests complete real sign-in without
+   * reading an inbox. Refuses outright in prod (mirrors UsersService.getTestCode
+   * — belt and suspenders, since the plaintext code is never even written to
+   * the prod table in the first place). See docs/e2e-testing.md.
+   */
+  @Get('email/test-code')
+  async getEmailTestCode(@Query('email') email?: string) {
+    if (process.env.STAGE === 'prod') throw new NotFoundException();
+    if (!email) throw new BadRequestException('email query param required');
+
+    const code = await this.users.getTestCode('email', email.toLowerCase());
+    if (!code) throw new NotFoundException('No pending code for that email');
+    return { code };
+  }
+
+  /**
+   * E2E-testing only: the pop quiz (QuizDialog) is regenerated with random
+   * correct answers per attempt, so a generated Playwright script can't
+   * hardcode them any more than it can read a real inbox for the email
+   * code above. Same gating, same reasoning, requires an authenticated
+   * session so it can only verify the caller's own account. See
+   * docs/e2e-testing.md.
+   */
+  @Post('test/verify')
+  @UseGuards(JwtAuthGuard)
+  async testVerify(@CurrentUser() user: AuthenticatedUser) {
+    if (process.env.STAGE === 'prod') throw new NotFoundException();
+    await this.users.markVerified(user.provider, user.providerAccountId);
+    return { verified: true };
   }
 
   @Get('me')
