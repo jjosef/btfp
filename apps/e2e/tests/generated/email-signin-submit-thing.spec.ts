@@ -15,7 +15,10 @@ test('sign in with work email, submit a dangerous food item for dogs, verify con
   await page.getByRole('button', { name: /send code/i }).click();
 
   // --- Step 2: Wait for the code input to appear (confirms POST /api/auth/email/request finished) ---
-  await expect(page.getByPlaceholder('123456')).toBeVisible();
+  // This request does a synchronous Bedrock classification + SES send
+  // (~2.5s warm, longer on a cold Lambda right after a fresh deploy) —
+  // the default 5s expect timeout isn't enough margin.
+  await expect(page.getByPlaceholder('123456')).toBeVisible({ timeout: 15000 });
 
   // Fetch the OTP code from the test endpoint (unauthenticated, no need for page.request here)
   const codeResponse = await page.request.get(

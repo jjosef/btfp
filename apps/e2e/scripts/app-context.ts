@@ -44,11 +44,18 @@ To sign in in a generated test:
    completes. Calling the test-code endpoint immediately after the click can
    read before it's written. Wait for the UI to confirm the request
    finished first — e.g. await
-   expect(page.getByPlaceholder('123456')).toBeVisible() (the dialog only
-   reaches its second step after the request succeeds) — THEN call GET
-   /api/auth/email/test-code?email=<address> to fetch the code. This
-   endpoint only exists outside prod and only returns a code while one is
-   pending. Use it instead of trying to read a real inbox.
+   expect(page.getByPlaceholder('123456')).toBeVisible({ timeout: 15000 })
+   (the dialog only reaches its second step after the request succeeds) —
+   THEN call GET /api/auth/email/test-code?email=<address> to fetch the
+   code. This endpoint only exists outside prod and only returns a code
+   while one is pending. Use it instead of trying to read a real inbox.
+   IMPORTANT — this specific request is genuinely slow, not just
+   click-to-render UI latency: it does a synchronous Bedrock classification
+   call plus an SES send, timed at ~2.5s even on a warm Lambda, and CI runs
+   this right after a fresh deploy where the Lambda is cold-starting for
+   the first time too. Playwright's default expect timeout (5000ms) is not
+   enough margin — always pass an explicit longer timeout (15000ms+) on
+   this specific assertion, not the default.
 3. Fill the now-visible page.getByPlaceholder('123456') input with the
    fetched code and click "Sign in" — the response sets an httpOnly session
    cookie and the dialog closes.
