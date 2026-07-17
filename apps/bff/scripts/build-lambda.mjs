@@ -26,6 +26,12 @@ await build({
     '@nestjs/platform-express',
     '@fastify/static',
     '@fastify/view',
+    // @nestjs/mapped-types tries `require('class-transformer/cjs/storage')`
+    // first and only falls back to this bare path in a catch block — this
+    // installed class-transformer version has no root-level storage.js
+    // (only cjs/esm variants), so esbuild can't resolve it statically.
+    // Externalizing is safe: the primary require always succeeds, so this
+    // fallback is unreachable at runtime.
     'class-transformer/storage',
   ],
   sourcemap: true,

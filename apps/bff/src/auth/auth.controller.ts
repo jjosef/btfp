@@ -130,14 +130,20 @@ export class AuthController {
   @Get('logout')
   logout(@Res() res: FastifyReply) {
     res.clearCookie(COOKIE_NAME, { path: '/' });
-    res.redirect(WEB_ORIGIN);
+    // Explicit 302 required: Fastify's redirect(url) only defaults to 302
+    // when no status was ever set on the reply; NestJS's Fastify adapter
+    // already calls .code() earlier in the pipeline, so the implicit
+    // default silently falls back to whatever that was (200) instead —
+    // a 200 with a Location header, which browsers don't follow, so
+    // sign-out/sign-in both looked like a blank page.
+    res.redirect(WEB_ORIGIN, 302);
   }
 
   private async completeOAuthLogin(req: FastifyRequest, res: FastifyReply) {
     const profile = req.user as unknown as OAuthProfile;
     const user = await this.users.upsertFromOAuth(profile);
     this.setSessionCookie(res, this.authService.issueSessionToken(user));
-    res.redirect(`${WEB_ORIGIN}/?signedIn=1`);
+    res.redirect(`${WEB_ORIGIN}/?signedIn=1`, 302);
   }
 
   private setSessionCookie(res: FastifyReply, token: string) {
