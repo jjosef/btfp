@@ -62,10 +62,14 @@ No long-lived AWS credentials are stored in GitHub at all. Instead:
   rather than creating a second one).
 - It creates one IAM role, `btfp-gha-deploy`. Its trust policy allows that OIDC provider to
   assume it, but only when the token's `sub` claim matches
-  `repo:GenomeInc/btfp:ref:refs/heads/main` — i.e. only a workflow run that is an actual push to
-  `main` can ever get credentials. A PR-triggered run's token has a different `sub`
-  (`repo:GenomeInc/btfp:pull_request`), so `ci.yml` genuinely cannot assume this role even if it
-  tried.
+  `repo:GenomeInc@32485630/btfp@1301972078:ref:refs/heads/main` — i.e. only a workflow run that
+  is an actual push to `main` can ever get credentials. (The `@<id>` suffixes are GitHub's
+  immutable org/repo IDs — confirmed empirically via a temporary debug step that printed the
+  real token, since the plain `owner/repo` form this was first written with doesn't match what
+  GitHub actually issues. Using the ID-suffixed form is also the safer match: it survives a
+  repo rename and can't be hijacked by transferring the name to a different org later.) A
+  PR-triggered run's token has a different `sub` (`repo:GenomeInc@.../btfp@...:pull_request`),
+  so `ci.yml` genuinely cannot assume this role even if it tried.
 - The role's **only** permission is `sts:AssumeRole` on four existing CDK bootstrap roles
   (`deploy-role`, `file-publishing-role`, `image-publishing-role`, `lookup-role` — created once,
   already, by `cdk bootstrap`). It has no direct S3/Lambda/CloudFormation/ECR permissions of its

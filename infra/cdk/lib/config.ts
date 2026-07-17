@@ -53,8 +53,13 @@ export const GITHUB_CLIENT_ID = process.env.BTFP_GITHUB_CLIENT_ID ?? 'Ov23lidrry
 export const GITHUB_CLIENT_SECRET_PARAM_NAME = '/btfp/github-client-secret';
 
 // CiStack's GitHub Actions OIDC role trust policy is scoped to this repo —
-// see docs/ci-cd.md.
-export const GITHUB_REPO = 'GenomeInc/btfp';
+// see docs/ci-cd.md. GitHub's OIDC `sub` claim includes immutable numeric
+// IDs alongside the org/repo names (`owner@ownerId/repo@repoId`, not plain
+// `owner/repo` — confirmed empirically via a debug step that printed the
+// actual token, not assumed from docs). Using the ID-suffixed form is also
+// the more secure match: it can't be hijacked by renaming/transferring the
+// repo to a different org/name later.
+export const GITHUB_REPO = 'GenomeInc@32485630/btfp@1301972078';
 
 export interface EnvConfig {
   envName: 'dev' | 'prod';
