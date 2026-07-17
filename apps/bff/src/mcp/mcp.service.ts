@@ -17,10 +17,19 @@ const TOOLS: ToolDefinition[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Free-text fuzzy search, e.g. "chocolate" or "aloe"' },
+        query: {
+          type: 'string',
+          description: 'Free-text fuzzy search, e.g. "chocolate" or "aloe"',
+        },
         petType: { type: 'string', description: 'e.g. dog, cat, horse' },
-        thingType: { type: 'string', description: 'e.g. plant, food, medication, product, activity' },
-        limit: { type: 'number', description: `Max results, default ${DEFAULT_LIMIT}, capped at ${MAX_LIMIT}` },
+        thingType: {
+          type: 'string',
+          description: 'e.g. plant, food, medication, product, activity',
+        },
+        limit: {
+          type: 'number',
+          description: `Max results, default ${DEFAULT_LIMIT}, capped at ${MAX_LIMIT}`,
+        },
       },
     },
   },
@@ -40,7 +49,8 @@ const TOOLS: ToolDefinition[] = [
   },
   {
     name: 'list_thing_types',
-    description: 'List all thing-type categories (e.g. plant, food, medication, product, activity).',
+    description:
+      'List all thing-type categories (e.g. plant, food, medication, product, activity).',
     inputSchema: { type: 'object', properties: {} },
   },
 ];

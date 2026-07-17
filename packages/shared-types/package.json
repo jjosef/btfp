@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint src"
+    "lint": "oxlint -c ../../.oxlintrc.json src"
   },
   "devDependencies": {
     "typescript": "^5.8.0"

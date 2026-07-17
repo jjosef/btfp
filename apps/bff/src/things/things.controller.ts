@@ -19,7 +19,11 @@ export class ThingsController {
   })
   @ApiQuery({ name: 'q', required: false, description: 'Free-text fuzzy search' })
   @ApiQuery({ name: 'petType', required: false, description: 'e.g. dog, cat, horse' })
-  @ApiQuery({ name: 'thingType', required: false, description: 'e.g. plant, food, medication, product, activity' })
+  @ApiQuery({
+    name: 'thingType',
+    required: false,
+    description: 'e.g. plant, food, medication, product, activity',
+  })
   async list(
     @Query('q') q?: string,
     @Query('petType') petType?: string,

@@ -72,7 +72,7 @@ export class ContributionsService {
 
     const now = new Date().toISOString();
     const contributor = await this.users.getById(contribution.contributorId);
-    const details = { ...(contribution.payload.details ?? {}) };
+    const details = { ...contribution.payload.details };
     if (contributor?.professional?.status === 'verified') {
       details.verifiedOrgDomain = contributor.professional.domain;
     }
@@ -100,7 +100,11 @@ export class ContributionsService {
         UpdateExpression:
           'SET #status = :approved, reviewedAt = :now, reviewerId = :reviewer REMOVE GSI2PK, GSI2SK',
         ExpressionAttributeNames: { '#status': 'status' },
-        ExpressionAttributeValues: { ':approved': 'approved', ':now': now, ':reviewer': reviewerId },
+        ExpressionAttributeValues: {
+          ':approved': 'approved',
+          ':now': now,
+          ':reviewer': reviewerId,
+        },
       }),
     );
 

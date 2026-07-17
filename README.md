@@ -1,8 +1,10 @@
 # badthingsforpets.com
 
-A searchable database of things that are dangerous to pets — foods, plants, medications,
-products, and activities — built for pet owners and for LLMs/consumers searching for pet
-safety information.
+[badthingsforpets.com](https://badthingsforpets.com)
+
+A searchable database of things that are dangerous to pets — foods, plants, medications, products, and activities — built for pet owners and for LLMs/consumers searching for pet safety information.
+
+Don't get view it, contribute to it!
 
 Not a substitute for veterinary care. For a suspected poisoning, contact a veterinarian or:
 

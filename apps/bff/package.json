@@ -7,7 +7,7 @@
     "dev": "tsc-watch --outDir dist-dev --onSuccess \"node dist-dev/main.js\"",
     "build": "node scripts/build-lambda.mjs",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint src"
+    "lint": "oxlint -c ../../.oxlintrc.json src"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.716.0",

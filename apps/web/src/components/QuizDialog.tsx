@@ -15,7 +15,7 @@ export function QuizDialog({ onPassed }: { onPassed: () => void }) {
     setResult(null);
     api.getQuiz().then((qs) => {
       setQuestions(qs);
-      setAnswers(new Array(qs.length).fill(-1));
+      setAnswers(Array.from({ length: qs.length }, () => -1));
     });
   }, [open]);
 
@@ -44,7 +44,8 @@ export function QuizDialog({ onPassed }: { onPassed: () => void }) {
             Pet safety pop quiz
           </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-neutral-500">
-            Three questions, drawn straight from our database. Get them all right to unlock adding entries.
+            Three questions, drawn straight from our database. Get them all right to unlock adding
+            entries.
           </Dialog.Description>
 
           <div className="mt-4 space-y-4">
@@ -64,7 +65,9 @@ export function QuizDialog({ onPassed }: { onPassed: () => void }) {
                         name={question.id}
                         className="sr-only"
                         checked={answers[qi] === ci}
-                        onChange={() => setAnswers((prev) => prev.map((a, i) => (i === qi ? ci : a)))}
+                        onChange={() =>
+                          setAnswers((prev) => prev.map((a, i) => (i === qi ? ci : a)))
+                        }
                       />
                       {choice}
                     </label>

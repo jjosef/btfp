@@ -1,6 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID, createHash } from 'node:crypto';
-import { GetCommand, PutCommand, QueryCommand, ScanCommand, UpdateCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import {
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  ScanCommand,
+  UpdateCommand,
+  DynamoDBDocumentClient,
+} from '@aws-sdk/lib-dynamodb';
 import type { User } from '@btfp/shared-types';
 import { DYNAMO_DOC_CLIENT, USERS_TABLE_NAME } from '../dynamo/dynamo.constants.js';
 import type { OAuthProfile } from './auth.types.js';
@@ -37,7 +44,10 @@ export class UsersService {
 
   async getByProviderAccount(provider: string, providerAccountId: string): Promise<User | null> {
     const result = await this.db.send(
-      new GetCommand({ TableName: USERS_TABLE_NAME, Key: { PK: this.pk(provider, providerAccountId) } }),
+      new GetCommand({
+        TableName: USERS_TABLE_NAME,
+        Key: { PK: this.pk(provider, providerAccountId) },
+      }),
     );
     return result.Item ? stripInternalUserFields(result.Item) : null;
   }
@@ -67,7 +77,8 @@ export class UsersService {
       displayName: profile.displayName,
       avatarUrl: profile.avatarUrl,
       email: profile.email,
-      providerAccountCreatedAt: profile.providerAccountCreatedAt ?? existing?.providerAccountCreatedAt,
+      providerAccountCreatedAt:
+        profile.providerAccountCreatedAt ?? existing?.providerAccountCreatedAt,
       verifiedContributor: existing?.verifiedContributor ?? false,
       verifiedAt: existing?.verifiedAt,
       professional: existing?.professional,
@@ -132,7 +143,10 @@ export class UsersService {
   /** Basic anti-spam: refuse a new code within CODE_RESEND_COOLDOWN_MS of the last one. */
   async canRequestNewCode(provider: string, providerAccountId: string): Promise<boolean> {
     const result = await this.db.send(
-      new GetCommand({ TableName: USERS_TABLE_NAME, Key: { PK: this.pk(provider, providerAccountId) } }),
+      new GetCommand({
+        TableName: USERS_TABLE_NAME,
+        Key: { PK: this.pk(provider, providerAccountId) },
+      }),
     );
     const issuedAt = result.Item?.professionalCodeIssuedAt as string | undefined;
     if (!issuedAt) return true;
@@ -192,15 +206,25 @@ export class UsersService {
   async getTestCode(provider: string, providerAccountId: string): Promise<string | null> {
     if (process.env.STAGE === 'prod') return null;
     const result = await this.db.send(
-      new GetCommand({ TableName: USERS_TABLE_NAME, Key: { PK: this.pk(provider, providerAccountId) } }),
+      new GetCommand({
+        TableName: USERS_TABLE_NAME,
+        Key: { PK: this.pk(provider, providerAccountId) },
+      }),
     );
     return (result.Item?.professionalCodeTestOnly as string | undefined) ?? null;
   }
 
   /** Hashes and compares `code`; on success moves status to awaiting_review and clears the code. */
-  async confirmProfessionalCode(provider: string, providerAccountId: string, code: string): Promise<boolean> {
+  async confirmProfessionalCode(
+    provider: string,
+    providerAccountId: string,
+    code: string,
+  ): Promise<boolean> {
     const result = await this.db.send(
-      new GetCommand({ TableName: USERS_TABLE_NAME, Key: { PK: this.pk(provider, providerAccountId) } }),
+      new GetCommand({
+        TableName: USERS_TABLE_NAME,
+        Key: { PK: this.pk(provider, providerAccountId) },
+      }),
     );
     const item = result.Item;
     if (!item?.professionalCodeHash || !item.professionalCodeExpiresAt) return false;
@@ -234,7 +258,12 @@ export class UsersService {
     return (result.Items ?? []).map((item) => stripInternalUserFields(item));
   }
 
-  async reviewProfessional(id: string, approve: boolean, reviewerId: string, reason?: string): Promise<User> {
+  async reviewProfessional(
+    id: string,
+    approve: boolean,
+    reviewerId: string,
+    reason?: string,
+  ): Promise<User> {
     const user = await this.getById(id);
     if (!user) throw new Error(`No user with id ${id}`);
 

@@ -14,8 +14,14 @@ without it, but sign-in won't work until GitHub OAuth credentials are set (see
 ## Before opening a PR
 
 ```bash
-pnpm turbo run lint typecheck build
+pnpm format          # oxfmt, writes in place
+pnpm turbo run lint typecheck build   # oxlint + tsc + build
 ```
+
+Linting is [oxlint](https://oxc.rs), formatting is [oxfmt](https://oxc.rs) — both Rust-based
+replacements for ESLint/Prettier, configured at `.oxlintrc.json`/`.oxfmtrc.json` in the repo
+root. `oxfmt` is still alpha software; if it ever produces something clearly wrong, that's
+worth a GitHub issue upstream rather than working around it silently here.
 
 For end-to-end coverage of a real user flow, see [e2e-testing.md](e2e-testing.md) — generate
 a Playwright test from a plain-English description rather than writing one by hand.

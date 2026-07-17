@@ -14,13 +14,19 @@ export class ProfessionalVerificationController {
 
   @Post('request')
   @UseGuards(JwtAuthGuard)
-  async request(@Body() dto: RequestProfessionalVerificationDto, @CurrentUser() user: AuthenticatedUser) {
+  async request(
+    @Body() dto: RequestProfessionalVerificationDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     return this.service.request(user, dto.email);
   }
 
   @Post('confirm')
   @UseGuards(JwtAuthGuard)
-  async confirm(@Body() dto: ConfirmProfessionalVerificationDto, @CurrentUser() user: AuthenticatedUser) {
+  async confirm(
+    @Body() dto: ConfirmProfessionalVerificationDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     const confirmed = await this.service.confirm(user, dto.code);
     return { confirmed };
   }

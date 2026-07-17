@@ -53,7 +53,9 @@ export class SearchHistoryService {
       if (!res.ok) throw new Error(`search API returned ${res.status}`);
       const body = (await res.json()) as BraveSearchResponse;
       return (body.web?.results ?? [])
-        .filter((item): item is { title: string; description?: string; url: string } => Boolean(item.title && item.url))
+        .filter((item): item is { title: string; description?: string; url: string } =>
+          Boolean(item.title && item.url),
+        )
         .map((item) => ({ title: item.title, snippet: item.description ?? '', link: item.url }));
     } catch (err) {
       this.logger.warn(

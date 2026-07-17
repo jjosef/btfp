@@ -13,7 +13,9 @@ export function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/things/:id" element={<ThingDetailPage />} />
+          {/* :slug is cosmetic only — ThingDetailPage looks up strictly by
+              :id, so a missing/stale/wrong slug still resolves correctly. */}
+          <Route path="/things/:id/:slug?" element={<ThingDetailPage />} />
           <Route path="/submit" element={<SubmitPage />} />
           <Route path="/moderation" element={<ModerationPage />} />
         </Routes>

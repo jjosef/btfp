@@ -72,12 +72,14 @@ export function SubmitPage() {
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-neutral-800">One quick step first</h1>
         <p className="mt-2 text-neutral-500">
-          Clear our pet-safety pop quiz, or verify a work email if you're a vet or scientist — either
-          unlocks adding entries.
+          Clear our pet-safety pop quiz, or verify a work email if you're a vet or scientist —
+          either unlocks adding entries.
         </p>
         {wasRejected && (
           <p className="mt-2 text-sm text-alert-600">
-            Your last organization verification wasn't approved{user.professional?.rejectionReason && ` (${user.professional.rejectionReason})`}. You're welcome to try again with a different address.
+            Your last organization verification wasn't approved
+            {user.professional?.rejectionReason && ` (${user.professional.rejectionReason})`}.
+            You're welcome to try again with a different address.
           </p>
         )}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -92,7 +94,9 @@ export function SubmitPage() {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-neutral-800">Thanks! 🐾</h1>
-        <p className="mt-2 text-neutral-500">Your submission is in the moderation queue for review.</p>
+        <p className="mt-2 text-neutral-500">
+          Your submission is in the moderation queue for review.
+        </p>
         <button
           onClick={() => navigate('/')}
           className="mt-6 rounded-full bg-paw-500 px-6 py-3 font-semibold text-white"

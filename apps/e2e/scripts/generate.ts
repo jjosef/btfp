@@ -82,7 +82,8 @@ async function generateSpec(prompt: string, snapshots: string): Promise<string> 
                   properties: {
                     code: {
                       type: 'string',
-                      description: 'Full contents of the .spec.ts file. No markdown fences, no prose.',
+                      description:
+                        'Full contents of the .spec.ts file. No markdown fences, no prose.',
                     },
                   },
                   required: ['code'],

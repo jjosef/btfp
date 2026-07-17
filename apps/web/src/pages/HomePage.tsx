@@ -15,7 +15,10 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.listPetTypes().then(setPetTypes).catch(() => setPetTypes([]));
+    api
+      .listPetTypes()
+      .then(setPetTypes)
+      .catch(() => setPetTypes([]));
   }, []);
 
   useEffect(() => {

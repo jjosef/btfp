@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import type { Thing } from '@btfp/shared-types';
 import { SeverityBadge } from './SeverityBadge.js';
+import { slugify } from '../lib/slugify.js';
 
 export function ThingCard({ thing }: { thing: Thing }) {
   return (
     <Link
-      to={`/things/${thing.id}`}
+      to={`/things/${thing.id}/${slugify(thing.name)}`}
       className="block rounded-cozy border border-paw-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-2">
@@ -16,7 +17,10 @@ export function ThingCard({ thing }: { thing: Thing }) {
       </div>
       <div className="mt-2 flex flex-wrap gap-1">
         {thing.petTypes.map((p) => (
-          <span key={p.petTypeId} className="flex items-center gap-1 text-xs capitalize text-neutral-500">
+          <span
+            key={p.petTypeId}
+            className="flex items-center gap-1 text-xs capitalize text-neutral-500"
+          >
             {p.petTypeId}
             <SeverityBadge severity={p.severity} />
           </span>

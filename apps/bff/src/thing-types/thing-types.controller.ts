@@ -8,7 +8,9 @@ export class ThingTypesController {
   constructor(private readonly thingTypes: ThingTypesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all thing types (e.g. plant, food, medication, product, activity)' })
+  @ApiOperation({
+    summary: 'List all thing types (e.g. plant, food, medication, product, activity)',
+  })
   async list() {
     return this.thingTypes.list();
   }

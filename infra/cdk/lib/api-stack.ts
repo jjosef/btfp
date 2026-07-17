@@ -68,6 +68,10 @@ export class ApiStack extends cdk.Stack {
         BEDROCK_INFERENCE_PROFILE_ID,
         JWT_SECRET: isProd ? PROD_JWT_SECRET : DEV_JWT_SECRET,
         BRAVE_SEARCH_API_KEY,
+        // Was missing entirely — fell back to its localhost default in every
+        // deployed environment, so the OAuth callback and /auth/logout
+        // redirected real visitors' browsers to http://localhost:5173.
+        WEB_ORIGIN: `https://${props.envConfig.domainName}`,
         ...githubEnv,
       },
     });

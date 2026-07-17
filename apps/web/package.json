@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b --noEmit && vite build",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint src"
+    "lint": "oxlint -c ../../.oxlintrc.json src"
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-rc.0",

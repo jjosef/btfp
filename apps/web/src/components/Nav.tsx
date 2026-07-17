@@ -22,7 +22,14 @@ export function Nav() {
             </Link>
           )}
           {user ? (
-            <span className="rounded-full bg-paw-100 px-3 py-1 text-paw-600">Hi, {user.displayName}</span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-paw-100 px-3 py-1 text-paw-600">
+                Hi, {user.displayName}
+              </span>
+              <a href="/api/auth/logout" className="hover:underline">
+                Sign out
+              </a>
+            </div>
           ) : (
             <>
               <EmailSignInDialog onSignedIn={refresh} />

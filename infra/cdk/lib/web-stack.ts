@@ -12,7 +12,12 @@ import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { EnvConfig } from './config.js';
-import { DEV_BASIC_AUTH_PASSWORD, DEV_BASIC_AUTH_USER, HOSTED_ZONE_ID, ROOT_DOMAIN } from './config.js';
+import {
+  DEV_BASIC_AUTH_PASSWORD,
+  DEV_BASIC_AUTH_USER,
+  HOSTED_ZONE_ID,
+  ROOT_DOMAIN,
+} from './config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -221,7 +226,10 @@ export class WebStack extends cdk.Stack {
           ...apiBehavior,
           responseHeadersPolicy: noIndexPolicy,
           functionAssociations: [
-            { function: forwardHostFunction, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST },
+            {
+              function: forwardHostFunction,
+              eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+            },
           ],
         },
         '/robots.txt': { origin: apiOrigin, ...apiBehavior, responseHeadersPolicy: noIndexPolicy },
@@ -247,7 +255,9 @@ export class WebStack extends cdk.Stack {
       distributionPaths: ['/*'],
     });
 
-    new cdk.CfnOutput(this, 'DistributionDomainName', { value: this.distribution.distributionDomainName });
+    new cdk.CfnOutput(this, 'DistributionDomainName', {
+      value: this.distribution.distributionDomainName,
+    });
     new cdk.CfnOutput(this, 'SiteBucketName', { value: this.siteBucket.bucketName });
   }
 }

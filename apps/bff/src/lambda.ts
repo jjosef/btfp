@@ -15,7 +15,9 @@ async function loadGithubClientSecret(): Promise<void> {
   const parameterName = process.env.GITHUB_CLIENT_SECRET_PARAM;
   if (!parameterName || process.env.GITHUB_CLIENT_SECRET) return;
   const ssm = new SSMClient({ region: process.env.AWS_REGION ?? 'us-east-1' });
-  const result = await ssm.send(new GetParameterCommand({ Name: parameterName, WithDecryption: true }));
+  const result = await ssm.send(
+    new GetParameterCommand({ Name: parameterName, WithDecryption: true }),
+  );
   if (result.Parameter?.Value) process.env.GITHUB_CLIENT_SECRET = result.Parameter.Value;
 }
 

@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { GetCommand, PutCommand, QueryCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import {
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  DynamoDBDocumentClient,
+} from '@aws-sdk/lib-dynamodb';
 import type { Thing } from '@btfp/shared-types';
 import { DYNAMO_DOC_CLIENT, CONTENT_TABLE_NAME } from '../dynamo/dynamo.constants.js';
 import { stripDynamoKeys } from '../dynamo/dynamo.utils.js';

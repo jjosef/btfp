@@ -9,7 +9,9 @@ const STYLES: Record<Severity, string> = {
 
 export function SeverityBadge({ severity }: { severity: Severity }) {
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STYLES[severity]}`}>
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STYLES[severity]}`}
+    >
       {severity}
     </span>
   );

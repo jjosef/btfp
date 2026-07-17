@@ -6,7 +6,11 @@ import * as sesActions from 'aws-cdk-lib/aws-ses-actions';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+import {
+  AwsCustomResource,
+  AwsCustomResourcePolicy,
+  PhysicalResourceId,
+} from 'aws-cdk-lib/custom-resources';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HOSTED_ZONE_ID, ROOT_DOMAIN, FORWARD_TO_ADDRESS } from './config.js';
@@ -133,7 +137,9 @@ export class EmailStack extends cdk.Stack {
         parameters: { RuleSetName: ruleSet.receiptRuleSetName },
         physicalResourceId: PhysicalResourceId.of(`activate-${ruleSet.receiptRuleSetName}`),
       },
-      policy: AwsCustomResourcePolicy.fromSdkCalls({ resources: AwsCustomResourcePolicy.ANY_RESOURCE }),
+      policy: AwsCustomResourcePolicy.fromSdkCalls({
+        resources: AwsCustomResourcePolicy.ANY_RESOURCE,
+      }),
     });
     activateRuleSet.node.addDependency(ruleSet);
     activateRuleSet.node.addDependency(forwardRule);

@@ -33,7 +33,9 @@ export class VerificationController {
       throw new ForbiddenException('Sign in with GitHub to become a verified contributor');
     }
 
-    if (!this.authService.isAccountOldEnough(account.providerAccountCreatedAt, MIN_ACCOUNT_AGE_DAYS)) {
+    if (
+      !this.authService.isAccountOldEnough(account.providerAccountCreatedAt, MIN_ACCOUNT_AGE_DAYS)
+    ) {
       throw new ForbiddenException(
         `Your GitHub account needs to be at least ${MIN_ACCOUNT_AGE_DAYS} days old to contribute`,
       );

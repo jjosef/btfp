@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('sign in with work email, submit a dangerous food item for dogs, verify confirmation', async ({ page }) => {
+test('sign in with work email, submit a dangerous food item for dogs, verify confirmation', async ({
+  page,
+}) => {
   const email = `e2e-${Date.now()}@badthingsforpets.com`;
 
   // Navigate to the home page
@@ -16,7 +18,9 @@ test('sign in with work email, submit a dangerous food item for dogs, verify con
   await expect(page.getByPlaceholder('123456')).toBeVisible();
 
   // Fetch the OTP code from the test endpoint (unauthenticated, no need for page.request here)
-  const codeResponse = await page.request.get(`/api/auth/email/test-code?email=${encodeURIComponent(email)}`);
+  const codeResponse = await page.request.get(
+    `/api/auth/email/test-code?email=${encodeURIComponent(email)}`,
+  );
   expect(codeResponse.ok()).toBeTruthy();
   const { code } = await codeResponse.json();
 
@@ -52,17 +56,25 @@ test('sign in with work email, submit a dangerous food item for dogs, verify con
   }
 
   // Why is it dangerous?
-  await page.getByLabel(/why is it dangerous/i).fill(
-    'Chocolate contains theobromine and caffeine, which are toxic to dogs and can cause vomiting, seizures, and death.'
-  );
+  await page
+    .getByLabel(/why is it dangerous/i)
+    .fill(
+      'Chocolate contains theobromine and caffeine, which are toxic to dogs and can cause vomiting, seizures, and death.',
+    );
 
   // Source (optional)
-  await page.getByLabel(/source/i).fill('https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants/chocolate');
+  await page
+    .getByLabel(/source/i)
+    .fill(
+      'https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants/chocolate',
+    );
 
   // Submit
   await page.getByRole('button', { name: /submit for review/i }).click();
 
   // --- Step 7: Assert on the confirmation screen ---
   await expect(page.getByRole('heading', { name: /thanks! 🐾/i })).toBeVisible();
-  await expect(page.getByText('Your submission is in the moderation queue for review.')).toBeVisible();
+  await expect(
+    page.getByText('Your submission is in the moderation queue for review.'),
+  ).toBeVisible();
 });

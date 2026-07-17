@@ -18,7 +18,9 @@ export type CurrentUser = User;
 
 export const api = {
   listThings: (params: { q?: string; petType?: string; thingType?: string } = {}) => {
-    const entries = Object.entries(params).filter((entry): entry is [string, string] => Boolean(entry[1]));
+    const entries = Object.entries(params).filter((entry): entry is [string, string] =>
+      Boolean(entry[1]),
+    );
     const qs = new URLSearchParams(entries).toString();
     return request<Thing[]>(`/things${qs ? `?${qs}` : ''}`);
   },

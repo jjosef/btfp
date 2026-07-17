@@ -21,14 +21,15 @@ export interface DomainEvidence {
   searchResults?: SearchResultSummary[] | null;
 }
 
-const MODEL_ID = process.env.BEDROCK_INFERENCE_PROFILE_ID ?? 'us.anthropic.claude-haiku-4-5-20251001-v1:0';
+const MODEL_ID =
+  process.env.BEDROCK_INFERENCE_PROFILE_ID ?? 'us.anthropic.claude-haiku-4-5-20251001-v1:0';
 
 function buildPrompt(domain: string, evidence?: DomainEvidence): string {
   const parts = [
     `Assess the email domain "${domain}" for someone claiming to be a veterinarian or scientist ` +
       'contributing to a pet-safety database. Classify what kind of organization it likely is, and ' +
-      "in your reasoning say whether the evidence below actually supports it being a real, " +
-      'established organization — or whether there\'s no independent trace of it existing.',
+      'in your reasoning say whether the evidence below actually supports it being a real, ' +
+      "established organization — or whether there's no independent trace of it existing.",
   ];
 
   parts.push(
@@ -58,9 +59,14 @@ function buildPrompt(domain: string, evidence?: DomainEvidence): string {
 @Injectable()
 export class BedrockClassifierService {
   private readonly logger = new Logger(BedrockClassifierService.name);
-  private readonly client = new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? 'us-east-1' });
+  private readonly client = new BedrockRuntimeClient({
+    region: process.env.AWS_REGION ?? 'us-east-1',
+  });
 
-  async classifyDomain(domain: string, evidence?: DomainEvidence): Promise<DomainClassification | null> {
+  async classifyDomain(
+    domain: string,
+    evidence?: DomainEvidence,
+  ): Promise<DomainClassification | null> {
     try {
       const response = await this.client.send(
         new ConverseCommand({
@@ -76,7 +82,8 @@ export class BedrockClassifierService {
               {
                 toolSpec: {
                   name: 'classify_domain',
-                  description: 'Classify what kind of organization an email domain likely belongs to.',
+                  description:
+                    'Classify what kind of organization an email domain likely belongs to.',
                   inputSchema: {
                     json: {
                       type: 'object',

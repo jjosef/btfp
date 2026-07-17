@@ -34,7 +34,12 @@ export class ProfessionalVerificationService {
     return this.users.listAwaitingReview();
   }
 
-  async review(userId: string, approve: boolean, reviewerId: string, reason?: string): Promise<User> {
+  async review(
+    userId: string,
+    approve: boolean,
+    reviewerId: string,
+    reason?: string,
+  ): Promise<User> {
     return this.users.reviewProfessional(userId, approve, reviewerId, reason);
   }
 }

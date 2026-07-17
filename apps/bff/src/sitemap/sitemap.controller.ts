@@ -13,7 +13,8 @@ export class SitemapController {
   @Get('sitemap.xml')
   @Header('Content-Type', 'application/xml')
   async sitemap(@Req() req: FastifyRequest): Promise<string> {
-    const host = (req.headers['x-forwarded-host'] as string) ?? req.headers.host ?? 'badthingsforpets.com';
+    const host =
+      (req.headers['x-forwarded-host'] as string) ?? req.headers.host ?? 'badthingsforpets.com';
     const origin = `https://${host}`;
     const things = await this.search.all();
 

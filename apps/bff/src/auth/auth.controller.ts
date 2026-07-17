@@ -75,7 +75,10 @@ export class AuthController {
     const user = await this.users.getByProviderAccount('email', providerAccountId);
     if (!user) throw new BadRequestException('Request a code first');
 
-    const confirmed = await this.emailCode.confirm({ provider: 'email', providerAccountId }, dto.code);
+    const confirmed = await this.emailCode.confirm(
+      { provider: 'email', providerAccountId },
+      dto.code,
+    );
     if (!confirmed) throw new UnauthorizedException('Invalid or expired code');
 
     this.setSessionCookie(res, this.authService.issueSessionToken(user));

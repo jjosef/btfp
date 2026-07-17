@@ -52,7 +52,8 @@ export function EmailSignInDialog({
     setError(null);
     try {
       const result = await api.confirmEmailSignIn(email, code);
-      if (!result.confirmed) throw new Error('That code is wrong or expired — check your email and try again.');
+      if (!result.confirmed)
+        throw new Error('That code is wrong or expired — check your email and try again.');
       onSignedIn();
       setOpen(false);
     } catch (err) {
@@ -74,10 +75,12 @@ export function EmailSignInDialog({
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 bg-black/30" />
         <Dialog.Popup className="fixed top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-cozy bg-white p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-bold text-neutral-800">Sign in with your work email</Dialog.Title>
+          <Dialog.Title className="text-lg font-bold text-neutral-800">
+            Sign in with your work email
+          </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-neutral-500">
-            No GitHub account needed — use your organizational email instead. Once reviewed, you'll be
-            able to contribute directly.
+            No GitHub account needed — use your organizational email instead. Once reviewed, you'll
+            be able to contribute directly.
           </Dialog.Description>
 
           {step === 'email' && (
@@ -91,7 +94,9 @@ export function EmailSignInDialog({
               />
               {error && <p className="text-sm text-alert-600">{error}</p>}
               <div className="flex justify-end gap-2">
-                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">Cancel</Dialog.Close>
+                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">
+                  Cancel
+                </Dialog.Close>
                 <button
                   onClick={submitEmail}
                   disabled={submitting || !email}
@@ -116,7 +121,9 @@ export function EmailSignInDialog({
               />
               {error && <p className="text-sm text-alert-600">{error}</p>}
               <div className="flex justify-end gap-2">
-                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">Cancel</Dialog.Close>
+                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">
+                  Cancel
+                </Dialog.Close>
                 <button
                   onClick={submitCode}
                   disabled={submitting || code.length !== 6}

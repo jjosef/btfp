@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint bin lib",
+    "lint": "oxlint -c ../../.oxlintrc.json bin lib",
     "cdk": "cdk"
   },
   "devDependencies": {

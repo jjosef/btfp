@@ -48,7 +48,9 @@ export class EmailCodeService {
       const records = await dns.resolveMx(domain);
       if (records.length === 0) throw new Error('no MX records');
     } catch {
-      throw new BadRequestException(`Couldn't verify that ${domain} can receive email — check for typos.`);
+      throw new BadRequestException(
+        `Couldn't verify that ${domain} can receive email — check for typos.`,
+      );
     }
 
     const canRequest = await this.users.canRequestNewCode(user.provider, user.providerAccountId);
@@ -60,7 +62,10 @@ export class EmailCodeService {
       this.homepageFetcher.fetchHomepageText(domain),
       this.searchHistory.searchDomain(domain),
     ]);
-    const classification = await this.bedrock.classifyDomain(domain, { homepageText, searchResults });
+    const classification = await this.bedrock.classifyDomain(domain, {
+      homepageText,
+      searchResults,
+    });
 
     const code = String(randomInt(100000, 999999));
     await this.users.setProfessionalPending({

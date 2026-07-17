@@ -18,7 +18,9 @@ export class McpController {
 
   @Get()
   streamingNotSupported(@Res() reply: FastifyReply) {
-    reply.status(405).send({ error: 'This MCP server has no server-initiated messages; POST only.' });
+    reply
+      .status(405)
+      .send({ error: 'This MCP server has no server-initiated messages; POST only.' });
   }
 
   @Post()
@@ -54,7 +56,11 @@ export class McpController {
   private async dispatch(method: string, params: Record<string, unknown>): Promise<unknown> {
     switch (method) {
       case 'initialize':
-        return { protocolVersion: PROTOCOL_VERSION, capabilities: { tools: {} }, serverInfo: SERVER_INFO };
+        return {
+          protocolVersion: PROTOCOL_VERSION,
+          capabilities: { tools: {} },
+          serverInfo: SERVER_INFO,
+        };
 
       case 'tools/list':
         return { tools: this.mcp.listTools() };
@@ -69,7 +75,9 @@ export class McpController {
           return { content: [{ type: 'text', text: JSON.stringify(result) }] };
         } catch (err) {
           return {
-            content: [{ type: 'text', text: err instanceof Error ? err.message : 'Tool call failed' }],
+            content: [
+              { type: 'text', text: err instanceof Error ? err.message : 'Tool call failed' },
+            ],
             isError: true,
           };
         }

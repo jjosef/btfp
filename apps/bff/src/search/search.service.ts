@@ -39,9 +39,16 @@ export class SearchService {
       things = things.filter((t) => t.thingTypeId === filters.thingType);
     }
 
+    // 0.35 (Fuse's own default range for "loose") was letting short common
+    // names cross-match on shared suffixes — e.g. "blueberry" fuzzy-matched
+    // "Maleberry"/"Fetterbush"/"Staggerbush" (the latter two list each other
+    // as otherNames aliases including "Staggerberry", which is where the
+    // stray "berry" match came from). Verified empirically: 0.2 drops all
+    // three false positives while still tolerating realistic typos
+    // (missing/swapped letters) on this dataset's short food/plant names.
     const fuse = new Fuse(things, {
       keys: ['name', 'otherNames', 'details.scientificName', 'details.toxicPrinciples'],
-      threshold: 0.35,
+      threshold: 0.2,
     });
     return fuse.search(query).map((r) => r.item);
   }

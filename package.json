@@ -13,13 +13,15 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "format": "oxfmt '**/*.{ts,tsx,js,mjs}' --ignore-path .gitignore",
+    "format:check": "oxfmt --check '**/*.{ts,tsx,js,mjs}' --ignore-path .gitignore",
     "seed:local": "pnpm --filter @btfp/seed run seed:local",
     "cdk": "pnpm --filter @btfp/infra run cdk"
   },
   "devDependencies": {
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
     "turbo": "^2.3.0",
-    "typescript": "^5.8.0",
-    "prettier": "^3.4.0",
-    "eslint": "^9.17.0"
+    "typescript": "^5.8.0"
   }
 }

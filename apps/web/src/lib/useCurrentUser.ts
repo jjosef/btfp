@@ -11,5 +11,13 @@ export function useCurrentUser() {
       .catch(() => setUser(null));
   }, []);
 
-  return { user, loading: user === undefined, refresh: () => api.me().then(setUser).catch(() => setUser(null)) };
+  return {
+    user,
+    loading: user === undefined,
+    refresh: () =>
+      api
+        .me()
+        .then(setUser)
+        .catch(() => setUser(null)),
+  };
 }

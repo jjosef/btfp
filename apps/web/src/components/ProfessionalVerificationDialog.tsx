@@ -40,7 +40,8 @@ export function ProfessionalVerificationDialog({ onSubmitted }: { onSubmitted: (
     setError(null);
     try {
       const result = await api.confirmProfessionalVerification(code);
-      if (!result.confirmed) throw new Error('That code is wrong or expired — check your email and try again.');
+      if (!result.confirmed)
+        throw new Error('That code is wrong or expired — check your email and try again.');
       setStep('submitted');
       onSubmitted();
     } catch (err) {
@@ -64,10 +65,12 @@ export function ProfessionalVerificationDialog({ onSubmitted }: { onSubmitted: (
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 bg-black/30" />
         <Dialog.Popup className="fixed top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-cozy bg-white p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-bold text-neutral-800">Verify your organization</Dialog.Title>
+          <Dialog.Title className="text-lg font-bold text-neutral-800">
+            Verify your organization
+          </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-neutral-500">
-            Use your work email — not a personal address — to skip the quiz and get a verified badge once
-            reviewed.
+            Use your work email — not a personal address — to skip the quiz and get a verified badge
+            once reviewed.
           </Dialog.Description>
 
           {step === 'email' && (
@@ -81,7 +84,9 @@ export function ProfessionalVerificationDialog({ onSubmitted }: { onSubmitted: (
               />
               {error && <p className="text-sm text-alert-600">{error}</p>}
               <div className="flex justify-end gap-2">
-                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">Cancel</Dialog.Close>
+                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">
+                  Cancel
+                </Dialog.Close>
                 <button
                   onClick={submitEmail}
                   disabled={submitting || !email}
@@ -109,7 +114,9 @@ export function ProfessionalVerificationDialog({ onSubmitted }: { onSubmitted: (
               />
               {error && <p className="text-sm text-alert-600">{error}</p>}
               <div className="flex justify-end gap-2">
-                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">Cancel</Dialog.Close>
+                <Dialog.Close className="rounded-full px-4 py-2 text-sm text-neutral-500">
+                  Cancel
+                </Dialog.Close>
                 <button
                   onClick={submitCode}
                   disabled={submitting || code.length !== 6}
@@ -124,8 +131,8 @@ export function ProfessionalVerificationDialog({ onSubmitted }: { onSubmitted: (
           {step === 'submitted' && (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-neutral-600">
-                Thanks — your organization is confirmed and waiting on a quick human review. You'll be able
-                to contribute as soon as it's approved.
+                Thanks — your organization is confirmed and waiting on a quick human review. You'll
+                be able to contribute as soon as it's approved.
               </p>
               <div className="flex justify-end">
                 <Dialog.Close className="rounded-full bg-paw-500 px-4 py-2 text-sm font-semibold text-white">
