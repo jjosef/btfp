@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
@@ -52,11 +53,25 @@ export class ApiStack extends cdk.Stack {
         }
       : {};
 
-    const handler = new lambda.Function(this, 'BffFunction', {
-      functionName: `btfp-${props.envConfig.envName}-bff`,
-      runtime: lambda.Runtime.NODEJS_22_X,
-      handler: 'lambda.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../../apps/bff/dist')),
+    const handler = new lambda.DockerImageFunction(this, 'BffFunction', {
+      // No explicit functionName: a pinned name means CloudFormation can't
+      // create-before-delete on any future required-replacement (it did
+      // hit exactly this migrating off the old zip-based Function, which
+      // rolled back cleanly) — letting CDK auto-generate one keeps that
+      // path clean going forward. Nothing else in the repo references the
+      // function name as a literal string (checked before removing it).
+      //
+      // Content-hash-addressed: dev and prod both build from the same
+      // {account, region} bootstrap container-assets ECR repo, so if CI
+      // publishes the exact same apps/bff/dist build to both, the prod
+      // deploy's image push is a genuine no-op (already exists) rather than
+      // a rebuild — see docs/ci-cd.md. Pinning the platform explicitly
+      // matters: without it, a local build on Apple Silicon hashes
+      // differently than GHA's x86 runners and silently produces a second,
+      // undeduplicated image.
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../../apps/bff'), {
+        platform: Platform.LINUX_AMD64,
+      }),
       memorySize: 512,
       timeout: cdk.Duration.seconds(15),
       environment: {

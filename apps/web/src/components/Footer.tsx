@@ -20,6 +20,11 @@ export function Footer() {
           Plant data adapted from the ASPCA Toxic and Non-Toxic Plants list. Community contributions
           are reviewed before publishing.
         </p>
+        <p className="mt-4">
+          <a className="underline" href="/llm-info">
+            LLM Information
+          </a>
+        </p>
       </div>
     </footer>
   );

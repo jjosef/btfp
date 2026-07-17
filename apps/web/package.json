@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b --noEmit && vite build",
     "typecheck": "tsc -b --noEmit",
-    "lint": "oxlint -c ../../.oxlintrc.json src"
+    "lint": "oxlint -c ../../.oxlintrc.json src scripts",
+    "prerender": "node scripts/prerender.mjs"
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-rc.0",
@@ -17,7 +18,9 @@
     "react-router-dom": "^7.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.0",
     "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",

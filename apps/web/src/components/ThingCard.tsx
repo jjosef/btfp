@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import type { Thing } from '@btfp/shared-types';
+import { slugify, type Thing } from '@btfp/shared-types';
 import { SeverityBadge } from './SeverityBadge.js';
-import { slugify } from '../lib/slugify.js';
 
 export function ThingCard({ thing }: { thing: Thing }) {
   return (

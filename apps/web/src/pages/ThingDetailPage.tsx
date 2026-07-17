@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Thing } from '@btfp/shared-types';
+import { slugify } from '@btfp/shared-types';
 import { api } from '../lib/api.js';
 import { SeverityBadge } from '../components/SeverityBadge.js';
+import { useDocumentMeta } from '../lib/useDocumentMeta.js';
+import { useJsonLd } from '../lib/useJsonLd.js';
+import { SITE_NAME, SITE_ORIGIN } from '../lib/site.js';
 
 function humanize(key: string): string {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
@@ -26,6 +30,42 @@ export function ThingDetailPage() {
       .then(setThing)
       .catch((err: Error) => setError(err.message));
   }, [id]);
+
+  const petSummary = thing?.petTypes.map((p) => `${p.petTypeId} (${p.severity})`).join(', ') ?? '';
+  const headline = thing ? `${thing.name} — is it dangerous for pets?` : null;
+  const description = thing
+    ? `${thing.name} (${thing.thingTypeId}): toxicity for ${petSummary}.` +
+      (thing.otherNames.length > 0
+        ? ` Also known as ${thing.otherNames.slice(0, 3).join(', ')}.`
+        : '') +
+      ` Source: ${thing.source}.`
+    : null;
+
+  useDocumentMeta(
+    headline ? `${headline} | badthingsforpets.com` : 'badthingsforpets.com',
+    description ??
+      'A searchable database of foods, plants, medications, and products that are dangerous for pets.',
+  );
+
+  useJsonLd(
+    'article',
+    thing && headline && description
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline,
+          description,
+          datePublished: thing.createdAt,
+          dateModified: thing.updatedAt,
+          author: { '@type': 'Organization', name: SITE_NAME, url: SITE_ORIGIN },
+          publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_ORIGIN },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${SITE_ORIGIN}/things/${thing.id}/${slugify(thing.name)}`,
+          },
+        }
+      : null,
+  );
 
   if (error) return <div className="mx-auto max-w-3xl px-4 py-10 text-alert-600">{error}</div>;
   if (!thing) return <div className="mx-auto max-w-3xl px-4 py-10 text-neutral-400">Loading…</div>;

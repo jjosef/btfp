@@ -52,6 +52,10 @@ export const BRAVE_SEARCH_API_KEY = process.env.BTFP_BRAVE_SEARCH_API_KEY ?? '';
 export const GITHUB_CLIENT_ID = process.env.BTFP_GITHUB_CLIENT_ID ?? 'Ov23lidrry3aBdRe4yUg';
 export const GITHUB_CLIENT_SECRET_PARAM_NAME = '/btfp/github-client-secret';
 
+// CiStack's GitHub Actions OIDC role trust policy is scoped to this repo —
+// see docs/ci-cd.md.
+export const GITHUB_REPO = 'GenomeInc/btfp';
+
 export interface EnvConfig {
   envName: 'dev' | 'prod';
   domainName: string;

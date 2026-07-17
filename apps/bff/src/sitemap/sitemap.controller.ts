@@ -1,5 +1,6 @@
 import { Controller, Get, Header, Req } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
+import { slugify } from '@btfp/shared-types';
 import { SearchService } from '../search/search.service.js';
 
 function escapeXml(value: string): string {
@@ -18,7 +19,11 @@ export class SitemapController {
     const origin = `https://${host}`;
     const things = await this.search.all();
 
-    const urls = [origin, `${origin}/submit`, ...things.map((t) => `${origin}/things/${t.id}`)]
+    const urls = [
+      origin,
+      `${origin}/submit`,
+      ...things.map((t) => `${origin}/things/${t.id}/${slugify(t.name)}`),
+    ]
       .map((url) => `  <url><loc>${escapeXml(url)}</loc></url>`)
       .join('\n');
 

@@ -179,20 +179,45 @@ export class WebStack extends cdk.Stack {
       runtime: cloudfront.FunctionRuntime.JS_2_0,
     });
 
-    // SPA client-side routes (e.g. /things/:id) have no matching S3 object.
-    // Rewriting the request URI here — before it ever reaches S3 — means S3
-    // always returns a real 200 for those paths, so no error-response
-    // rewriting is needed at all. That matters because CloudFront's
-    // distribution-level errorResponses can't be scoped to one behavior: an
-    // earlier version of this stack used errorResponses for the SPA
-    // fallback, and it silently rewrote genuine 404s from the /api/*
+    // SPA client-side routes (e.g. /things/:id/:slug) have no matching S3
+    // object by default. Rewriting the request URI here — before it ever
+    // reaches S3 — means S3 always returns a real 200 for those paths, so no
+    // error-response rewriting is needed at all. That matters because
+    // CloudFront's distribution-level errorResponses can't be scoped to one
+    // behavior: an earlier version of this stack used errorResponses for the
+    // SPA fallback, and it silently rewrote genuine 404s from the /api/*
     // behavior (a real NotFoundException from the BFF) into 200 + index.html
     // too. Scoping the fix to a viewer-request function on just the default
-    // (S3) behavior avoids that entirely. Heuristic: a request with no file
-    // extension in its last path segment is a client-side route, not a
-    // static asset.
+    // (S3) behavior avoids that entirely.
+    //
+    // Prod appends /index.html to the *current* path rather than always
+    // rewriting to a single generic /index.html — apps/web/scripts/
+    // prerender.mjs (see docs/seo.md) saves real per-route rendered HTML at
+    // exactly these paths (e.g. things/<id>/<slug>/index.html) as part of
+    // the prod build, so crawlers get real content instead of the empty
+    // shell. Dev is never prerendered (it's not meant to be crawled/indexed
+    // at all — see docs/infra.md) and so keeps the old always-serve-the-
+    // generic-shell behavior; using the per-path version there would 403
+    // every route except "/" since no prerendered files exist for dev.
     const spaFallbackFunction = new cloudfront.Function(this, 'SpaFallbackFunction', {
-      code: cloudfront.FunctionCode.fromInline(`
+      code: cloudfront.FunctionCode.fromInline(
+        isProd
+          ? `
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          if (uri.endsWith('/')) {
+            request.uri = uri + 'index.html';
+            return request;
+          }
+          var lastSegment = uri.split('/').pop();
+          if (lastSegment.indexOf('.') === -1) {
+            request.uri = uri + '/index.html';
+          }
+          return request;
+        }
+      `
+          : `
         function handler(event) {
           var request = event.request;
           var uri = request.uri;
@@ -202,7 +227,8 @@ export class WebStack extends cdk.Stack {
           }
           return request;
         }
-      `),
+      `,
+      ),
       runtime: cloudfront.FunctionRuntime.JS_2_0,
     });
 

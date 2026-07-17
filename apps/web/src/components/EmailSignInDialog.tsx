@@ -71,7 +71,10 @@ export function EmailSignInDialog({
         if (!next) reset();
       }}
     >
-      <Dialog.Trigger className={triggerClassName}>Sign in with work email</Dialog.Trigger>
+      <Dialog.Trigger className={triggerClassName}>
+        <span className="hidden sm:inline">Sign in with work email</span>
+        <span className="sm:hidden">Email</span>
+      </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 bg-black/30" />
         <Dialog.Popup className="fixed top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-cozy bg-white p-6 shadow-xl">

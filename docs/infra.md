@@ -4,6 +4,14 @@ AWS CDK (TypeScript), everything in `us-east-1` (required for CloudFront's ACM c
 CLOUDFRONT-scope WAF WebACL; also simplest for a single-region MVP). No VPC, no NAT gateway
 — Lambda talks to DynamoDB directly over the AWS SDK, which is both cheaper and simpler.
 
+## Automated deploys
+
+Pushes to `main` normally deploy themselves — see [docs/ci-cd.md](./ci-cd.md) for the full
+GitHub Actions pipeline (build once → dev → e2e → human-approved promotion to prod, including
+how GitHub Actions authenticates to AWS via OIDC). Everything below in this file is the manual
+`cdk deploy` path: still accurate, still how `BtfpCi` itself and any one-off/hotfix/debugging
+deploy gets done, just no longer the routine way changes ship.
+
 ## Stacks
 
 - **`BtfpDns`** — one Route53 public hosted zone for `badthingsforpets.com`. Deployed once,
@@ -12,9 +20,12 @@ CLOUDFRONT-scope WAF WebACL; also simplest for a single-region MVP). No VPC, no 
   prod. Deployed once, standalone, alongside `BtfpDns` — auto-creates its DKIM DNS records
   against the same hosted zone. Used for the professional-verification code emails (see
   `docs/verification-flow.md`).
+- **`BtfpCi`** — one IAM role GitHub Actions assumes via OIDC to deploy. Deployed once,
+  standalone. See [docs/ci-cd.md](./ci-cd.md).
 - **`BtfpDev`** / **`BtfpProd`** — CDK Stages, each composing:
   - **Data** — DynamoDB `Content` + `Users` tables, on-demand billing.
-  - **Api** — one Lambda running the NestJS BFF, behind an API Gateway HTTP API.
+  - **Api** — one Lambda (container image — see [docs/ci-cd.md](./ci-cd.md)) running the
+    NestJS BFF, behind an API Gateway HTTP API.
   - **Web** — S3 (private, OAC) + CloudFront + WAFv2 + ACM cert + Route53 alias record(s).
 
 `BtfpDev` serves `dev.badthingsforpets.com`; `BtfpProd` serves `badthingsforpets.com` and
@@ -84,12 +95,15 @@ place, it's not a real barrier.
 Prod deliberately does the opposite of dev: `robots.txt` allows known AI crawlers by name
 (GPTBot, ClaudeBot, PerplexityBot, etc.), `/sitemap.xml` lists every thing page, `/llms.txt`
 summarizes the site and API for agentic consumption, and `/api/openapi.json` exposes the
-full API contract. None of this makes the actual HTML crawlable, though — the frontend is a
-client-side-only SPA, so a crawler that doesn't execute JavaScript still sees an empty shell
-for `/` and `/things/:id`. Fixing that needs build-time prerendering or SSR, which hasn't
-been done yet.
+full API contract. The frontend is a client-side-only SPA, so a crawler that doesn't execute
+JavaScript would otherwise see an empty shell for `/` and `/things/:id` — fixed for prod via
+build-time prerendering, see [docs/seo.md](./seo.md).
 
 ## Deploy order
+
+This is the manual path — normally `main` deploys itself, see
+[docs/ci-cd.md](./ci-cd.md). Steps 7–11 below are exactly what `deploy.yml`'s jobs run, just by
+hand.
 
 1. `aws sso login --profile <your-profile>`
 2. `pnpm --filter @btfp/infra cdk bootstrap` (once per account/region)
@@ -104,9 +118,13 @@ been done yet.
 8. `pnpm --filter @btfp/web build` — the Web stack's `BucketDeployment` uploads
    `apps/web/dist` to S3 and invalidates CloudFront as part of `cdk deploy`, so this must
    exist first too
-9. For dev: load `infra/cdk/.env.deploy.local` (see above) before deploying — the Basic
-   Auth password comes from there. For prod, no extra env vars needed.
-10. `pnpm --filter @btfp/infra cdk deploy BtfpDev/* BtfpProd/*`
+9. For a prod deploy only: `PRERENDER_API_ORIGIN=https://badthingsforpets.com pnpm
+   --filter @btfp/web run prerender` — crawls the just-built `dist/` and saves real
+   per-route rendered HTML for crawlers. See [docs/seo.md](./seo.md). Skip for dev — it's
+   not meant to be crawled/indexed at all.
+10. For dev: load `infra/cdk/.env.deploy.local` (see above) before deploying — the Basic
+    Auth password comes from there. For prod, no extra env vars needed.
+11. `pnpm --filter @btfp/infra cdk deploy BtfpDev/* BtfpProd/*`
 
 The Bedrock inference profile id (`BEDROCK_INFERENCE_PROFILE_ID` in `config.ts`) is
 hardcoded to Claude Haiku 4.5's current profile — Anthropic model ids on Bedrock are

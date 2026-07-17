@@ -97,8 +97,14 @@ Two AWS-native alternatives were considered and ruled out for this in favor of w
   *different* product for this — Web Search on Amazon Bedrock AgentCore (2026-06-17) — but
   that's the same AgentCore Gateway path as above, with the same tradeoffs.
 
-## Adding generated specs to CI
+## Running in CI
 
-Not wired up yet. `turbo.json` already has a `test` task defined (currently unused) that a
-future `apps/e2e` CI step could hook into — `pnpm --filter @btfp/e2e test` against the
-deployed dev stage after each deploy would be the natural place to start.
+Wired up: `.github/workflows/deploy.yml`'s `e2e` job runs `pnpm --filter @btfp/e2e test`
+against the freshly-deployed `https://dev.badthingsforpets.com` after every push to `main`,
+gating promotion to prod — see [docs/ci-cd.md](./ci-cd.md) for the full pipeline. Same
+invocation documented above, just automated instead of run by hand.
+
+Accepted tradeoff: the generated spec does a real `POST /submit` and a real email sign-up
+against dev's actual DynamoDB tables, so every CI run permanently adds to dev's data. Not
+cleaned up automatically — dev isn't a pristine/indexed dataset to begin with (see
+[docs/infra.md](./infra.md#dev-is-not-public)); wipe/reseed it by hand if it gets noisy.
