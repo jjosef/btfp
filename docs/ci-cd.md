@@ -44,10 +44,11 @@ is the fallback for hotfixes or debugging a broken pipeline).
 3. Watch it run: `gh run watch --repo GenomeInc/btfp` (or the
    [Actions tab](https://github.com/GenomeInc/btfp/actions)) picks up the newest run
    automatically. `build` → `deploy-dev` → `e2e` take a few minutes combined.
-4. If `e2e` fails, prod is never touched — fix forward with a new commit to `main` (small,
-   solo-maintainer repo; branch protection only requires the check, not a second reviewer) and
-   let the pipeline re-run from the top. Don't re-run the failed job in isolation — a later job
-   re-run without the earlier ones means it's no longer testing what will actually ship.
+4. If `e2e` fails, prod is never touched — fix forward with a new PR (same as step 1; direct
+   pushes to `main` aren't possible for anyone, admins included — see below) and let the
+   pipeline re-run from the top once it merges. Don't re-run the failed job in isolation — a
+   later job re-run without the earlier ones means it's no longer testing what will actually
+   ship.
 5. Once `e2e` and `prod-diff` are green, `deploy-prod` shows **Waiting** in the Actions UI — this
    is the approval gate, not a hang or a failure. Open the run, click into `deploy-prod`, hit
    **Review deployments**, read `prod-diff`'s summary (a real `cdk diff BtfpProd/*`, computed
@@ -161,7 +162,11 @@ Not automatable from CDK — these are GitHub repo settings.
 3. **`production` Environment** (Settings → Environments → New environment, name it
    `production`): add yourself as a required reviewer. This is the actual prod approval gate.
 4. **Branch protection on `main`** (Settings → Branches → Add rule): require the `CI / check`
-   status check before merging. No required second-reviewer — solo-maintainer repo.
+   status check before merging, and **enable "Include administrators"** (`enforce_admins`) —
+   without it, anyone with admin access can bypass the check and push straight to `main`,
+   silently defeating the whole point of requiring it. No required second-reviewer — solo-
+   maintainer repo. With this on, there is no direct-push path for anyone; every change,
+   including hotfixes, goes through a PR.
 
 ## Known accepted risks
 
