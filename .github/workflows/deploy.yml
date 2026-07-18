@@ -187,6 +187,15 @@ jobs:
           name: web-dist
           path: apps/web/dist
 
+      # NOT part of either artifact: apps/web/dist is already a self-contained
+      # bundle (vite inlines its dependencies at build time), so it doesn't
+      # need this. But prerender.mjs below runs as a plain Node script
+      # (import slugify from '@btfp/shared-types'), resolved at runtime via
+      # the pnpm workspace symlink — which points at this package's source
+      # checkout, not the artifact. `pnpm install` alone only wires up the
+      # symlink; without this, `dist/index.js` doesn't exist yet.
+      - run: pnpm --filter @btfp/shared-types build
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
