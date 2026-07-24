@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -50,6 +52,8 @@ jobs:
       BTFP_BRAVE_SEARCH_API_KEY: ${{ secrets.BTFP_BRAVE_SEARCH_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -84,6 +88,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -124,6 +130,8 @@ jobs:
       BTFP_BRAVE_SEARCH_API_KEY: ${{ secrets.BTFP_BRAVE_SEARCH_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -169,6 +177,8 @@ jobs:
       BTFP_BRAVE_SEARCH_API_KEY: ${{ secrets.BTFP_BRAVE_SEARCH_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:

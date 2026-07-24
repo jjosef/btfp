@@ -16,7 +16,9 @@
     "format": "oxfmt '**/*.{ts,tsx,js,mjs}' --ignore-path .gitignore",
     "format:check": "oxfmt --check '**/*.{ts,tsx,js,mjs}' --ignore-path .gitignore",
     "seed:local": "pnpm --filter @btfp/seed run seed:local",
-    "cdk": "pnpm --filter @btfp/infra run cdk"
+    "cdk": "pnpm --filter @btfp/infra run cdk",
+    "secrets:push": "pnpm --filter @btfp/infra run secrets:push",
+    "secrets:sync": "pnpm --filter @btfp/infra run secrets:sync"
   },
   "devDependencies": {
     "oxfmt": "^0.59.0",
