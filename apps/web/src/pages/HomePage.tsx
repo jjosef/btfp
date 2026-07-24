@@ -1,10 +1,16 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+=======
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+>>>>>>> 2b1add6 (centaralizing SDK and framwork)
 import type { PetType, Thing } from '@btfp/shared-types';
 import { api } from '../lib/api.js';
 import { ThingCard } from '../components/ThingCard.js';
 import { PetTypeSelect } from '../components/PetTypeSelect.js';
 
+<<<<<<< HEAD
 const RANDOM_SAMPLE_SIZE = 20;
 
 function randomSample<T>(items: T[], count: number): T[] {
@@ -15,6 +21,9 @@ function randomSample<T>(items: T[], count: number): T[] {
   }
   return shuffled.slice(0, count);
 }
+=======
+const PAGE_SIZE = 24;
+>>>>>>> 2b1add6 (centaralizing SDK and framwork)
 
 export function HomePage() {
   const [params, setParams] = useSearchParams();
@@ -24,6 +33,7 @@ export function HomePage() {
   const [petTypes, setPetTypes] = useState<PetType[]>([]);
   const [things, setThings] = useState<Thing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     api
@@ -36,11 +46,15 @@ export function HomePage() {
     setLoading(true);
     api
       .listThings({ q: q || undefined, petType: petType || undefined })
-      .then(setThings)
+      .then((results) => {
+        setThings(results);
+        setVisibleCount(PAGE_SIZE);
+      })
       .catch(() => setThings([]))
       .finally(() => setLoading(false));
   }, [q, petType]);
 
+<<<<<<< HEAD
   // Idle browsing (no search, no pet filter) doesn't need to show the whole
   // ~450-entry database at once — a random taste of what's in here is
   // plenty, and leaves room for other homepage content later. An actual
@@ -51,6 +65,9 @@ export function HomePage() {
     () => (isBrowsing ? randomSample(things, RANDOM_SAMPLE_SIZE) : things),
     [things, isBrowsing],
   );
+=======
+  const visibleThings = things.slice(0, visibleCount);
+>>>>>>> 2b1add6 (centaralizing SDK and framwork)
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -80,6 +97,7 @@ export function HomePage() {
       <section className="mt-10">
         {loading ? (
           <p className="text-center text-neutral-400">Fetching the facts…</p>
+<<<<<<< HEAD
         ) : visibleThings.length === 0 ? (
           <p className="text-center text-neutral-400">Nothing found — try a different search.</p>
         ) : (
@@ -88,6 +106,36 @@ export function HomePage() {
               <ThingCard key={thing.id} thing={thing} />
             ))}
           </div>
+=======
+        ) : (
+          <>
+            {things.length === 0 ? (
+              <p className="text-center text-neutral-400">
+                Nothing found — try a different search.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleThings.map((thing) => (
+                  <ThingCard key={thing.id} thing={thing} />
+                ))}
+              </div>
+            )}
+            {visibleCount < things.length && (
+              <button
+                onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                className="mx-auto mt-6 block rounded-full border border-paw-300 px-6 py-2 text-sm font-semibold text-paw-600 hover:bg-paw-50"
+              >
+                Load more ({things.length - visibleCount} more)
+              </button>
+            )}
+            <Link
+              to={`/submit${q ? `?name=${encodeURIComponent(q)}` : ''}`}
+              className="mx-auto mt-8 block max-w-sm rounded-cozy border border-dashed border-paw-300 bg-white px-4 py-3 text-center text-sm font-semibold text-paw-600 hover:bg-paw-50"
+            >
+              Can't find it? Add it →
+            </Link>
+          </>
+>>>>>>> 2b1add6 (centaralizing SDK and framwork)
         )}
       </section>
     </div>
